@@ -18,24 +18,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - os: linux
-            arch: amd64
-          - os: linux
-            arch: arm64
-          - os: darwin
-            arch: amd64
-          - os: darwin
-            arch: arm64
-          - os: windows
-            arch: amd64
-            ext: .exe
-          - os: windows
-            arch: arm64
-            ext: .exe
-
 
     steps:
       - uses: actions/checkout@v6
@@ -46,14 +28,6 @@ jobs:
 
       - name: Set up runner environment
         uses: ./.github/actions/prep-runner
-
-      - name: Build Go binary for ${{ matrix.os }}-${{ matrix.arch }}
-        uses: ./.github/actions/build-go-binaries
-        with:
-          binary-name: godo
-          os: ${{ matrix.os }}
-          arch: ${{ matrix.arch }}
-          ext: ${{ matrix.ext || '' }}
 
   release:
     needs: build
