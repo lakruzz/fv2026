@@ -1,4 +1,4 @@
-## RAG Instructions Location
+# RAG Instructions Location
 
 Additional instructions can be found in:
 
