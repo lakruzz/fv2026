@@ -19,6 +19,8 @@
   ],
   "config": {
     "MD033": false, // Allow inline HTML
+    "MD060": false, // Loose table syntax
+    "MD040": false, // Loose fenced code blocks
     "MD004": { "style": "dash" }, // Enforce consistent unordered list style (dash)
     "MD013": false, // Disable line length rule
     "MD036": false, // Disable Emphasis used instead of a header
