@@ -23,7 +23,8 @@
     "**/Makefile",
     "**/go.mod",
     "**/go.sum",
-    "**/htmlcov/**"
+    "**/htmlcov/**",
+    "output/**"
   ],
   "files": [
     "**/*.md",

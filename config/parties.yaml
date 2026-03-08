@@ -107,6 +107,15 @@ parties:
       - "*.pdf"
     description: "Danish People's Party"
 
+  - name: "Lakruzz"
+    website: "https://www.lakruzz.com"
+    domains:
+      - "lakruzz.com"
+      - "www.lakruzz.com"
+    pdf_patterns:
+      - "*.pdf"
+    description: "Test website for crawler validation"
+
 # Global crawling settings
 crawl_settings:
   max_depth: 2
