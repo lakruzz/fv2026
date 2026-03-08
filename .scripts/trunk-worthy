@@ -46,19 +46,28 @@
 #          .scripts/trunk-worthy mark-pending
 #     ---
 
-CHECK_NAMES=("cspell" "markdownlint" "prettier")   # Checks to run in the first wave (required)
+CHECK_NAMES=("cspell" "markdownlint" "prettier" "format-check" "lint" "test")   # Checks to run in the first wave (required)
 CHECK_NAMES_2ND=()   # 2nd wave of checks that only run if the first wave passes (optional)
-CHECK_NAMES_3RD=( )   # 3rd wave of checks that only run if the 2nd wave passes (optional)
+CHECK_NAMES_3RD=()   # 3rd wave of checks that only run if the 2nd wave passes (optional)
 
 # Mapping of names (above) to their respective commands
 declare -A CHECK_COMMANDS=(
     [cspell]="cspell"
     [markdownlint]="markdownlint-cli2"
     [prettier]="prettier --check ."
+    [format-check]="uv run poe format-check"
+    [lint]="uv run poe lint"
+    [test]="uv run poe test"
 )
 
 # Mapping for display names (optional) No entry means it will just capitalize the name from CHECK_NAMES
 declare -A DISPLAY_NAMES=(
+    [cspell]="Code Spell Checker"
+    [markdownlint]="Markdown Lint"
+    [prettier]="Prettier"
+    [format-check]="Format Check"
+    [lint]="Ruff Lint"
+    [test]="Pytest Test"
 )
 
 ####################################################

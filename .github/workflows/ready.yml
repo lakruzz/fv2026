@@ -42,7 +42,7 @@ jobs:
     needs: 
       - trunk-worthy
     env:
-      GITHUB_TOKEN: ${{ secrets.READY_PUSHER }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Mark trunk-worthy
         run: |

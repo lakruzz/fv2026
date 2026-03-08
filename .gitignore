@@ -42,3 +42,35 @@ example-issue.md
 .tt_cache
 *.octoshift.log
 *.octoshift.verbose.log
+default.code-workspace
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+*.egg
+.hypothesis/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# uv
+.venv/
+.uv.cache/
+
+# Output directories
+output/
+temp/

@@ -1,0 +1,154 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "web-scraper-rag"
+version = "0.1.0"
+description = "Web scraper for converting party websites into RAG files for Gemini Gem"
+requires-python = ">=3.11"
+authors = [{ name = "Web Scraper RAG Contributors" }]
+license = "MIT"
+readme = "README.md"
+keywords = ["web-scraper", "rag", "gemini", "markdown"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+]
+
+dependencies = ["pyyaml>=6.0"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.14.1",
+    "ruff>=0.14.0",
+    "poethepoet>=0.24.0",
+]
+
+firecrawl = ["firecrawl-py>=0.1.0"]
+
+pdf = ["pypdf>=4.0.0"]
+
+[project.scripts]
+web-scraper-rag = "web_scraper_rag.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.14.1",
+    "ruff>=0.14.0",
+    "poethepoet>=0.24.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+indent-width = 4
+
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    "temp",
+    ".tmp",
+]
+
+[tool.ruff.lint]
+select = [
+    "B",   # flake8-bugbear
+    "I",   # isort
+    "ERA", # eradicate (remove dead code)
+    "F",   # Pyflakes
+    "E",   # Error
+    "S",   # flake8-bandit
+    "RUF", # Ruff-specific rules
+    "SIM", # flake8-simplify
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "A",   # flake8-builtins
+    "C4",  # flake8-comprehensions
+    "C90", # mccabe
+    "ISC", # flake8-implicit-str-concat
+    "PIE", # flake8-pie
+    "RET", # flake8-return
+    "TID", # flake8-tidy-imports
+    "ARG", # flake8-unused-arguments
+]
+
+ignore = [
+    "E501", # Line too long (handled by formatter)
+    "S101", # Use of assert (pytest uses assert)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101", # assert statements in tests
+    "S105", # Hardcoded password in tests
+]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra --strict-markers --cov=src/web_scraper_rag --cov-report=term-missing --cov-report=html"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+branch = true
+source = ["src/web_scraper_rag"]
+omit = ["*/tests/*", "*/test_*.py"]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+
+[tool.poe.tasks]
+test = "pytest"
+lint = "ruff check src/ tests/"
+format = "ruff format src/ tests/"
+format-check = "ruff format --check src/ tests/"
+fix-ruff = "ruff check --fix src/ tests/"
+fix-prettier = "prettier --write ."
+fix-markdownlint = "markdownlint-cli2 --fix"
+
+[tool.poe.tasks.all-checks]
+help = "Run all checks: formatting, linting, and tests"
+sequence = ["format-check", "lint", "test"]
+
+[tool.poe.tasks.fix-all]
+help = "Run all fixes: formatting, linting, and tests"
+sequence = ["format", "fix-ruff", "fix-prettier", "fix-markdownlint"]

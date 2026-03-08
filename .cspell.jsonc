@@ -23,6 +23,7 @@
     "**/Makefile",
     "**/go.mod",
     "**/go.sum",
+    "**/htmlcov/**",
   ],
   "files": [
     "**/*.md",
@@ -61,5 +62,7 @@
     "<a.*?>", // ignore HTML anchor tags,
     "<img.*?>", // ignore HTML image tags,
     "'.*'", // ignore text in single quotes
+    "https?://\\S+", // ignore http/https URLs
+    "\\b[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}(?:/\\S*)?", // ignore domain names and URLs like example.com or example.com/path
   ],
 }

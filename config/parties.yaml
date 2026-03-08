@@ -1,0 +1,122 @@
+parties:
+  - name: "Alternativet"
+    website: "https://www.alternativet.dk"
+    domains:
+      - "alternativet.dk"
+    pdf_patterns:
+      - "manifest"
+      - "program"
+      - "*.pdf"
+    description: "The Alternative – An idealistic political party"
+
+  - name: "Enhedslisten"
+    website: "https://www.enhedslisten.dk"
+    domains:
+      - "enhedslisten.dk"
+    pdf_patterns:
+      - "*.pdf"
+    description: "The Unity List – A Danish left-wing political alliance"
+
+  - name: "Frie Grønne"
+    website: "https://friegronne.dk"
+    domains:
+      - "friegronne.dk"
+    pdf_patterns:
+      - "*.pdf"
+    description: "Free Greens – The Liberal Green Party"
+
+  - name: "Konservative Folkeparti"
+    website: "https://www.konservative.dk"
+    domains:
+      - "konservative.dk"
+    pdf_patterns:
+      - "program"
+      - "manifest"
+      - "*.pdf"
+    description: "Conservative People's Party"
+
+  - name: "Kristendemokraterne"
+    website: "https://www.krfd.dk"
+    domains:
+      - "krfd.dk"
+    pdf_patterns:
+      - "*.pdf"
+    description: "Christian Democrats"
+
+  - name: "Moderaterne"
+    website: "https://moderaterne.dk"
+    domains:
+      - "moderaterne.dk"
+    pdf_patterns:
+      - "*.pdf"
+    description: "The Moderates – A centrist political party"
+
+  - name: "Radikale Venstre"
+    website: "https://www.radikale.dk"
+    domains:
+      - "radikale.dk"
+    pdf_patterns:
+      - "program"
+      - "manifest"
+      - "*.pdf"
+    description: "The Radical Left – A centrist, progressive party"
+
+  - name: "Socialdemokraterne"
+    website: "https://www.socialdemokraterne.dk"
+    domains:
+      - "socialdemokraterne.dk"
+    pdf_patterns:
+      - "program"
+      - "manifest"
+      - "*.pdf"
+    description: "The Social Democrats"
+
+  - name: "Socialistisk Folkeparti"
+    website: "https://www.sf.dk"
+    domains:
+      - "sf.dk"
+    pdf_patterns:
+      - "*.pdf"
+    description: "Socialist People's Party"
+
+  - name: "Venstre"
+    website: "https://www.venstre.dk"
+    domains:
+      - "venstre.dk"
+    pdf_patterns:
+      - "program"
+      - "manifest"
+      - "*.pdf"
+    description: "Venstre – Denmark's Liberal Party"
+
+  - name: "Nye Borgerlige"
+    website: "https://nyeborgerlige.dk"
+    domains:
+      - "nyeborgerlige.dk"
+    pdf_patterns:
+      - "*.pdf"
+    description: "New Right – A liberal-conservative party"
+
+  - name: "Dansk Folkeparti"
+    website: "https://www.danskfolkeparti.dk"
+    domains:
+      - "danskfolkeparti.dk"
+    pdf_patterns:
+      - "program"
+      - "manifest"
+      - "*.pdf"
+    description: "Danish People's Party"
+
+# Global crawling settings
+crawl_settings:
+  max_depth: 2
+  timeout_seconds: 30
+  respect_robots_txt: true
+  rate_limit_delay_seconds: 1
+  user_agent: "web-scraper-rag/0.1.0 (+https://github.com/example/web-scraper-rag)"
+
+# Output settings
+output:
+  markdown_extension: ".md"
+  pdf_extension: ".pdf"
+  merged_pdf_suffix: "_documents"

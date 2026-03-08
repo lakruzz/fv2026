@@ -5,6 +5,23 @@ set -eou pipefail
 PREFIX="🍰  "
 echo "$PREFIX Running $(basename $0)"
 
+# Python environment setup with uv
+echo "$PREFIX Setting up Python environment with uv..."
+if ! command -v uv &> /dev/null; then
+  echo "$PREFIX ❌ ERROR: uv is not installed. The devcontainer feature should have installed it."
+  exit 1
+fi
+
+echo "$PREFIX Installing uv virtual environment..."
+uv venv --python 3.11 .venv
+
+echo "$PREFIX Activating virtual environment..."
+. .venv/bin/activate
+
+echo "$PREFIX Syncing dependencies with uv..."
+uv sync --all-extras
+echo "$PREFIX ✅ Python environment synced with uv"
+
 # GitHub CLI Dependencies
 set +e
 gh auth status >/dev/null 2>&1

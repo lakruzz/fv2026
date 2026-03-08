@@ -9,6 +9,19 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Set up uv and Python environment
+      shell: bash
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        uv venv --python 3.11
+        . .venv/bin/activate
+        uv sync --all-extras
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
