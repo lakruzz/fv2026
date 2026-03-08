@@ -15,7 +15,7 @@
     "!temp/**", // Exclude temp directory
     "!.bundle/**", // Exclude .bundle (ruby)
     "!vendor/**", // Exclude vendor (ruby)
-    "!.venv/**", // Exclude Python virtual environment
+    "!.venv/**" // Exclude Python virtual environment
   ],
   "config": {
     "MD033": false, // Allow inline HTML
@@ -27,6 +27,6 @@
     "MD041": { "allow_preamble": true, "level": 1 }, // Allow preamble, require first header to be level 1
     "MD026": { "punctuation": ".," }, // Allow punctuation at the end of a list item, except for "." and ","
     "MD024": { "siblings_only": true }, // Rule only apply to siblings (same parent)
-    "MD010": { "code_blocks": false, "spaces_per_tab": 2 }, // Allow tabs in code blocks and set spaces per tab to 2
-  },
+    "MD010": { "code_blocks": false, "spaces_per_tab": 2 } // Allow tabs in code blocks and set spaces per tab to 2
+  }
 }

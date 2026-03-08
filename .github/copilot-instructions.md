@@ -236,7 +236,8 @@ uv pip install -e .
 
 ## Links & References
 
-- **gh-tt project:** <https://github.com/devx-cafe/gh-tt>
+- **This Repository:** <https://github.com/lakruzz/fv2026>
+- **gh-tt project:** <https://github.com/devx-cafe/gh-tt> (reference implementation for structure and best practices)
 - **Ruff documentation:** <https://docs.astral.sh/ruff/>
 - **Pytest documentation:** <https://docs.pytest.org/>
 - **uv package manager:** <https://astral.sh/uv/>
