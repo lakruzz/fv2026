@@ -38,10 +38,20 @@ class TestParseArguments:
         args = parse_arguments(["--party", "alternativet", "--config", "custom.yaml"])
         assert args.config == "custom.yaml"
 
+    def test_quiet_flag(self):
+        """Test quiet flag parsing."""
+        args = parse_arguments(["--party", "alternativet", "--quiet"])
+        assert args.quiet is True
+
     def test_verbose_flag(self):
         """Test verbose flag parsing."""
         args = parse_arguments(["--party", "alternativet", "--verbose"])
         assert args.verbose is True
+
+    def test_dryrun_flag(self):
+        """Test dryrun flag parsing."""
+        args = parse_arguments(["--party", "alternativet", "--dryrun"])
+        assert args.dryrun is True
 
     def test_no_follow_links(self):
         """Test no-follow-links flag."""
@@ -58,6 +68,11 @@ class TestParseArguments:
         with pytest.raises(SystemExit):
             parse_arguments(["--party", "alternativet", "--all"])
 
+    def test_mutually_exclusive_verbose_quiet(self):
+        """Test that --verbose and --quiet are mutually exclusive."""
+        with pytest.raises(SystemExit):
+            parse_arguments(["--party", "alternativet", "--verbose", "--quiet"])
+
     def test_required_selection(self):
         """Test that either --party or --all is required."""
         with pytest.raises(SystemExit):
@@ -71,7 +86,9 @@ class TestParseArguments:
         assert args.output_format == "markdown"
         assert args.include_pdfs is False
         assert args.verbose is False
-        assert args.depth == 2
+        assert args.quiet is False
+        assert args.dryrun is False
+        assert args.depth is None
 
     def test_short_options(self):
         """Test short option aliases."""

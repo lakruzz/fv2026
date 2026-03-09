@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &>/dev/null && pwd )"
+PYTHON="${PYTHON:-python3}"
+
+command -v "$PYTHON" >/dev/null \
+  || { echo "🛑  $PYTHON not found in PATH"; exit 1; }
+
+# Ensure this checkout wins on the import path
+export PYTHONPATH="$SCRIPT_DIR${PYTHONPATH:+:$PYTHONPATH}"
+
+exec "$PYTHON" -m web_scraper_rag "$@"

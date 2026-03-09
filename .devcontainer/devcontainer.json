@@ -11,7 +11,7 @@
       "version": "3.11"
     },
     "ghcr.io/devcontainers-extra/features/uv:1": {},
-    "ghcr.io/hspaans/devcontainer-features/pytest:1": {},
+    "ghcr.io/hspaans/devcontainer-features/pytest:2.0.0": {},
     "ghcr.io/devcontainers-extra/features/npm-packages:1": {
       "packages": ["markdownlint-cli2", "prettier", "cspell", "@cspell/dict-da-dk"]
     }
@@ -48,7 +48,8 @@
   "remoteEnv": {
     "GH_TOKEN": "${localEnv:GH_TOKEN}",
     "UV_VENV_CLEAR": "1",
-    "UV_LINK_MODE": "copy"
+    "UV_LINK_MODE": "copy",
+    "PLAYWRIGHT_BROWSERS_PATH": "/localhome/.cache/ms-playwright"
   },
   // Mount the workspace folder one level higher than the git repo
   // Mount the user's home directory - ignored in GitHub Codespaces

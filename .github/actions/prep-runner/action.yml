@@ -22,6 +22,12 @@ runs:
         . .venv/bin/activate
         uv sync --all-extras
 
+    - name: Install Playwright browsers
+      shell: bash
+      run: |
+        . .venv/bin/activate
+        playwright install --with-deps chromium
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:

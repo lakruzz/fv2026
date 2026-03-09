@@ -31,12 +31,19 @@ Examples:
         default="config/parties.yaml",
         help="Path to configuration file (default: config/parties.yaml)",
     )
-    parser.add_argument(
+    verbosity_group = parser.add_mutually_exclusive_group()
+    verbosity_group.add_argument(
         "-v",
         "--verbose",
         action="store_true",
         default=False,
         help="Enable verbose output",
+    )
+    verbosity_group.add_argument(
+        "--quiet",
+        action="store_true",
+        default=False,
+        help="Reduce output",
     )
     parser.add_argument(
         "--version",
@@ -93,8 +100,14 @@ Examples:
     parser.add_argument(
         "--depth",
         type=int,
-        default=2,
-        help="Maximum crawl depth for following links (default: 2)",
+        default=None,
+        help="Maximum crawl depth cap. If omitted, use per-party depth from config",
+    )
+    parser.add_argument(
+        "--dryrun",
+        action="store_true",
+        default=False,
+        help="Discover URLs and report crawl/ignore decisions without collecting content",
     )
 
     return parser.parse_args(args)
@@ -104,9 +117,11 @@ def main(args: list[str] | None = None) -> int:
     """Main entry point for the CLI."""
     try:
         parsed_args = parse_arguments(args)
+        verbose = parsed_args.verbose
+        quiet = parsed_args.quiet
 
         # Load configuration
-        config = load_config(parsed_args.config, verbose=parsed_args.verbose)
+        config = load_config(parsed_args.config, verbose=verbose)
 
         # Execute appropriate action
         if parsed_args.party:
@@ -118,7 +133,9 @@ def main(args: list[str] | None = None) -> int:
                 include_pdfs=parsed_args.include_pdfs,
                 follow_links=not parsed_args.no_follow_links,
                 depth=parsed_args.depth,
-                verbose=parsed_args.verbose,
+                dry_run=parsed_args.dryrun,
+                quiet=quiet,
+                verbose=verbose,
             )
         elif parsed_args.all:
             crawl_all_parties(
@@ -128,7 +145,9 @@ def main(args: list[str] | None = None) -> int:
                 include_pdfs=parsed_args.include_pdfs,
                 follow_links=not parsed_args.no_follow_links,
                 depth=parsed_args.depth,
-                verbose=parsed_args.verbose,
+                dry_run=parsed_args.dryrun,
+                quiet=quiet,
+                verbose=verbose,
             )
 
         return 0
@@ -138,7 +157,7 @@ def main(args: list[str] | None = None) -> int:
         return 130
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
-        if parsed_args.verbose:
+        if "parsed_args" in locals() and parsed_args.verbose:
             import traceback
 
             traceback.print_exc()

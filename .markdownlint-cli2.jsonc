@@ -15,7 +15,8 @@
     "!temp/**", // Exclude temp directory
     "!.bundle/**", // Exclude .bundle (ruby)
     "!vendor/**", // Exclude vendor (ruby)
-    "!.venv/**" // Exclude Python virtual environment
+    "!.venv/**", // Exclude Python virtual environment
+    "!output/**" // Exclude output directory
   ],
   "config": {
     "MD033": false, // Allow inline HTML

@@ -12,15 +12,23 @@ if ! command -v uv &> /dev/null; then
   exit 1
 fi
 
-echo "$PREFIX Installing uv virtual environment..."
 uv venv --python 3.11 .venv
+echo "$PREFIX ✅ Virtual Python environment created..."
 
-echo "$PREFIX Activating virtual environment..."
 . .venv/bin/activate
+echo "$PREFIX ✅ Virtual environment activated..."
 
-echo "$PREFIX Syncing dependencies with uv..."
 uv sync --all-extras
 echo "$PREFIX ✅ Python environment synced with uv"
+
+PLAYWRIGHT_CACHE_DIR="${PLAYWRIGHT_BROWSERS_PATH:-$HOME/.cache/ms-playwright}"
+if compgen -G "$PLAYWRIGHT_CACHE_DIR/chromium_headless_shell-*/chrome-linux/headless_shell" > /dev/null; then
+  echo "$PREFIX ✅ Playwright Chromium already installed in cache"
+else
+  echo "$PREFIX Installing Playwright Chromium and OS dependencies (first time only)..."
+  playwright install --with-deps chromium
+  echo "$PREFIX ✅ Playwright Chromium installed"
+fi
 
 # GitHub CLI Dependencies
 set +e

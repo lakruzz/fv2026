@@ -38,7 +38,7 @@ python -m web_scraper_rag --party alternativet --output-format markdown
 python -m web_scraper_rag --all --output-format markdown
 
 # Crawl with PDF merging
-python -m web_scraper_rag --all --include-pdfs --verbose
+python -m web_scraper_rag --all --include-pdfs
 ```
 
 ## Features
@@ -50,7 +50,8 @@ python -m web_scraper_rag --all --include-pdfs --verbose
 - **Flexible CLI** — Named arguments (no positional args) for intuitive usage
 - **Depth control** — Crawl just homepage (depth 0) to multiple levels (depth 2+)
 - **Error resilience** — Gracefully handles network errors and continues crawling
-- **Verbose logging** — Optional stderr output for debugging
+- **Verbose by default** — Detailed crawl output is shown unless `--quiet` is used
+- **Dry run mode** — Discover URLs and ignore decisions without collecting content
 
 ## Crawler Usage Examples
 
@@ -81,19 +82,19 @@ The `--depth` parameter controls how many levels of links to follow:
 **Quick validation (just get a feel for the output):**
 
 ```bash
-python -m web_scraper_rag --party alternativet --depth 0 --verbose
+python -m web_scraper_rag --party alternativet --depth 0
 ```
 
 **Full party overview (most common):**
 
 ```bash
-python -m web_scraper_rag --party alternativet --depth 1 --verbose
+python -m web_scraper_rag --party alternativet --depth 1
 ```
 
 **Comprehensive crawl (all party info):**
 
 ```bash
-python -m web_scraper_rag --party alternativet --depth 2 --verbose
+python -m web_scraper_rag --party alternativet --depth 2
 ```
 
 **Crawl all parties:**
@@ -114,10 +115,16 @@ python -m web_scraper_rag --party alternativet --no-follow-links
 python -m web_scraper_rag --party alternativet --output-dir my_data/ --depth 1
 ```
 
-**Verbose output for debugging:**
+**Quiet mode:**
 
 ```bash
-python -m web_scraper_rag --party alternativet --depth 1 --verbose
+python -m web_scraper_rag --party alternativet --depth 1 --quiet
+```
+
+**Dry run (discover pages and ignore decisions only):**
+
+```bash
+python -m web_scraper_rag --party alternativet --depth 2 --dryrun
 ```
 
 Output shows:
@@ -125,6 +132,7 @@ Output shows:
 - Configuration loaded
 - Party being crawled
 - Each page being processed with depth level
+- Each URL ignored by an ignore pattern, including the matching pattern
 - Total pages crawled
 - Final output file location
 - **Depth control** — Crawl just homepage (depth 0) to multiple levels (depth 2+)

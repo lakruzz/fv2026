@@ -21,12 +21,16 @@ def sample_config():
             {
                 "name": "Alternativet",
                 "website": "https://www.alternativet.dk",
+                "depth": 2,
+                "ignore_urls": [],
                 "domains": ["alternativet.dk"],
                 "pdf_patterns": ["manifest", "program", "*.pdf"],
             },
             {
                 "name": "Enhedslisten",
                 "website": "https://www.enhedslisten.dk",
+                "depth": 2,
+                "ignore_urls": [],
                 "domains": ["enhedslisten.dk"],
                 "pdf_patterns": ["*.pdf"],
             },

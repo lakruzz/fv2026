@@ -24,7 +24,8 @@
     "**/go.mod",
     "**/go.sum",
     "**/htmlcov/**",
-    "output/**"
+    "output/**",
+    "config/*.yaml"
   ],
   "files": [
     "**/*.md",

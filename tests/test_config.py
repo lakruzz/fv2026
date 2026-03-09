@@ -52,7 +52,12 @@ class TestValidatePartyConfig:
 
     def test_valid_party(self):
         """Test validation of a valid party config."""
-        party = {"name": "Test Party", "website": "https://example.com"}
+        party = {
+            "name": "Test Party",
+            "website": "https://example.com",
+            "depth": 2,
+            "ignore_urls": [],
+        }
         validate_party_config(party)  # Should not raise
 
     def test_missing_name(self):
@@ -65,6 +70,48 @@ class TestValidatePartyConfig:
         """Test validation of party config missing website."""
         party = {"name": "Test Party"}
         with pytest.raises(ConfigError, match="missing required field: website"):
+            validate_party_config(party)
+
+    def test_missing_depth(self):
+        """Test validation of party config missing depth."""
+        party = {
+            "name": "Test Party",
+            "website": "https://example.com",
+            "ignore_urls": [],
+        }
+        with pytest.raises(ConfigError, match="missing required field: depth"):
+            validate_party_config(party)
+
+    def test_missing_ignore_urls(self):
+        """Test validation of party config missing ignore_urls."""
+        party = {
+            "name": "Test Party",
+            "website": "https://example.com",
+            "depth": 2,
+        }
+        with pytest.raises(ConfigError, match="missing required field: ignore_urls"):
+            validate_party_config(party)
+
+    def test_invalid_depth_type(self):
+        """Test validation of party config with invalid depth type."""
+        party = {
+            "name": "Test Party",
+            "website": "https://example.com",
+            "depth": "2",
+            "ignore_urls": [],
+        }
+        with pytest.raises(ConfigError, match="field 'depth' must be"):
+            validate_party_config(party)
+
+    def test_invalid_ignore_urls_type(self):
+        """Test validation of party config with invalid ignore_urls type."""
+        party = {
+            "name": "Test Party",
+            "website": "https://example.com",
+            "depth": 2,
+            "ignore_urls": "admin",
+        }
+        with pytest.raises(ConfigError, match="field 'ignore_urls' must be"):
             validate_party_config(party)
 
 

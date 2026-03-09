@@ -3,6 +3,9 @@
     {
       "path": ".",
     },
+    {
+      "path": "../../localhome/GitHub/devx-cafe/gh-tt",
+    },
   ],
   "settings": {
     "chat.tools.terminal.autoApprove": {

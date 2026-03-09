@@ -55,10 +55,16 @@ def validate_party_config(party: dict[str, Any]) -> None:
     Raises:
         ConfigError: If required fields are missing
     """
-    required_fields = ["name", "website"]
+    required_fields = ["name", "website", "depth", "ignore_urls"]
     for field in required_fields:
         if field not in party:
             raise ConfigError(f"Party config missing required field: {field}")
+
+    if not isinstance(party["depth"], int) or party["depth"] < 0:
+        raise ConfigError("Party config field 'depth' must be a non-negative integer")
+
+    if not isinstance(party["ignore_urls"], list):
+        raise ConfigError("Party config field 'ignore_urls' must be a list")
 
 
 def get_party_by_name(config: dict[str, Any], party_name: str) -> dict[str, Any]:

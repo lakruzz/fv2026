@@ -1,6 +1,26 @@
 parties:
   - name: "Alternativet"
     website: "https://www.alternativet.dk"
+    depth: 3
+    ignore_urls:
+      - "*/personer/sekretariat**"
+      - "*/personer/folketing/*"
+      - "*/personer/byraad**"
+      - "*/personer/ordfoerer**"
+      - "*/personer/hovedbestyrelse**"
+      - "*/personer/politisk-forum**"
+      - "*/kalender*"
+      - "https://dialog.alternativet.dk**"
+      - "https://alleos.alternativet.dk**"
+      - "http://**"
+      - "*/persondata**"
+      - "*/lokalafdelinger**"
+      - "*/info/*"
+      - "*/presse**"
+      - "*/bidrag**"
+      - "*/blivmedlem**"
+      - "*/vedtaegter**"
+      - "*/skoleelever**"
     domains:
       - "alternativet.dk"
     pdf_patterns:
@@ -11,6 +31,21 @@ parties:
 
   - name: "Enhedslisten"
     website: "https://www.enhedslisten.dk"
+    depth: 3
+    ignore_urls:
+      - "**.webp"
+      - "**.jpg"
+      - "https://shop.enhedslisten.dk**"
+      - "https://mit.enhedslisten.dk**"
+      - "https://vores.enhedslisten.dk**"
+      - "https://elevernes.enhedslisten.dk**"
+      - "*/kontakt/*"
+      - "*/stoet/*"
+      - "*/byraad/*"
+      - "*/regionsraad/*"
+      - "*/english/*"
+      - "*/cookie**"
+      - "http://**"
     domains:
       - "enhedslisten.dk"
     pdf_patterns:
@@ -19,6 +54,19 @@ parties:
 
   - name: "Frie Grønne"
     website: "https://friegronne.dk"
+    depth: 3
+    ignore_urls:
+      - "**.pdf"
+      - "**donation**"
+      - "*/nyheder**"
+      - "**2024**"
+      - "**2025**"
+      - "*/kontakt**"
+      - "**vaelgererklaering**"
+      - "*/bliv-**"
+      - "*page_id**"
+      - "*/kommunalvalgskandidater**"
+
     domains:
       - "friegronne.dk"
     pdf_patterns:
@@ -27,6 +75,8 @@ parties:
 
   - name: "Konservative Folkeparti"
     website: "https://www.konservative.dk"
+    depth: 2
+    ignore_urls: []
     domains:
       - "konservative.dk"
     pdf_patterns:
@@ -37,6 +87,8 @@ parties:
 
   - name: "Kristendemokraterne"
     website: "https://www.krfd.dk"
+    depth: 2
+    ignore_urls: []
     domains:
       - "krfd.dk"
     pdf_patterns:
@@ -45,6 +97,8 @@ parties:
 
   - name: "Moderaterne"
     website: "https://moderaterne.dk"
+    depth: 2
+    ignore_urls: []
     domains:
       - "moderaterne.dk"
     pdf_patterns:
@@ -53,6 +107,8 @@ parties:
 
   - name: "Radikale Venstre"
     website: "https://www.radikale.dk"
+    depth: 2
+    ignore_urls: []
     domains:
       - "radikale.dk"
     pdf_patterns:
@@ -63,6 +119,8 @@ parties:
 
   - name: "Socialdemokraterne"
     website: "https://www.socialdemokraterne.dk"
+    depth: 2
+    ignore_urls: []
     domains:
       - "socialdemokraterne.dk"
     pdf_patterns:
@@ -73,6 +131,8 @@ parties:
 
   - name: "Socialistisk Folkeparti"
     website: "https://www.sf.dk"
+    depth: 2
+    ignore_urls: []
     domains:
       - "sf.dk"
     pdf_patterns:
@@ -81,6 +141,8 @@ parties:
 
   - name: "Venstre"
     website: "https://www.venstre.dk"
+    depth: 2
+    ignore_urls: []
     domains:
       - "venstre.dk"
     pdf_patterns:
@@ -91,6 +153,8 @@ parties:
 
   - name: "Nye Borgerlige"
     website: "https://nyeborgerlige.dk"
+    depth: 2
+    ignore_urls: []
     domains:
       - "nyeborgerlige.dk"
     pdf_patterns:
@@ -99,6 +163,9 @@ parties:
 
   - name: "Dansk Folkeparti"
     website: "https://www.danskfolkeparti.dk"
+    depth: 2
+    ignore_urls: []
+
     domains:
       - "danskfolkeparti.dk"
     pdf_patterns:
@@ -109,6 +176,15 @@ parties:
 
   - name: "Lakruzz"
     website: "https://www.lakruzz.com"
+    depth: 3
+    ignore_urls:
+      - "/terms/"
+      - "/feed.xml"
+      - "*/assets/*"
+      - "https://agent.lakruzz.com**"
+      - "https://code-conf.lakruzz.com**"
+      - "**.pdf"
+      - "*/tags"
     domains:
       - "lakruzz.com"
       - "www.lakruzz.com"
