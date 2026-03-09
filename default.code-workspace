@@ -2,14 +2,12 @@
   "folders": [
     {
       "path": ".",
-    },
-    {
-      "path": "../../localhome/GitHub/devx-cafe/gh-tt",
-    },
+    }
   ],
   "settings": {
     "chat.tools.terminal.autoApprove": {
       "uv": true,
+      "git fetch": true,
     },
   },
 }

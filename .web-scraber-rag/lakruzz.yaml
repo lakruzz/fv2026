@@ -1,0 +1,32 @@
+sites:
+  - name: "Lakruzz"
+    website: "https://www.lakruzz.com"
+    depth: 3
+    ignore_urls:
+      - "/terms/"
+      - "/feed.xml"
+      - "*/assets/*"
+      - "https://agent.lakruzz.com**"
+      - "https://code-conf.lakruzz.com**"
+      - "**.pdf"
+      - "*/tags"
+    domains:
+      - "lakruzz.com"
+      - "www.lakruzz.com"
+    pdf_patterns:
+      - "*.pdf"
+    description: "Test website for crawler validation"
+
+# Global crawling settings
+crawl_settings:
+  max_depth: 2
+  timeout_seconds: 30
+  respect_robots_txt: true
+  rate_limit_delay_seconds: 1
+  user_agent: "web-scraper-rag/0.1.0 (+https://github.com/example/web-scraper-rag)"
+
+# Output settings
+output:
+  markdown_extension: ".md"
+  pdf_extension: ".pdf"
+  merged_pdf_suffix: "_documents"

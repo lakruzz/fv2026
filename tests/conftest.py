@@ -17,7 +17,7 @@ def temp_dir():
 def sample_config():
     """Provide a sample configuration dictionary."""
     return {
-        "parties": [
+        "sites": [
             {
                 "name": "Alternativet",
                 "website": "https://www.alternativet.dk",

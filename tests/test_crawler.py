@@ -251,7 +251,7 @@ class TestCrawlParty:
         from web_scraper_rag.crawler import crawl_party
 
         config = {
-            "parties": [
+            "sites": [
                 {
                     "name": "Test Party",
                     "website": "https://example.com",
@@ -325,7 +325,7 @@ class TestCrawlAllParties:
         from web_scraper_rag.crawler import crawl_party
 
         config = {
-            "parties": [
+            "sites": [
                 {
                     "name": "Test Party",
                     "website": "https://example.com",

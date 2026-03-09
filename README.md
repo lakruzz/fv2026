@@ -275,10 +275,16 @@ uv add --optional firecrawl firecrawl-py
 
 ## Configuration
 
-Party websites are defined in `config/parties.yaml`:
+Site definitions are discovered from `./.web-scraber-rag/` in this order:
+
+1. `./.web-scraber-rag/sites.yml`
+2. `./.web-scraber-rag/sites.yaml`
+3. First alphanumeric `./.web-scraber-rag/*.yml` or `./.web-scraber-rag/*.yaml`
+
+Example config:
 
 ```yaml
-parties:
+sites:
   - name: "Alternativet"
     website: "https://www.alternativet.dk"
     domains: ["alternativet.dk"]
@@ -290,18 +296,18 @@ Custom config files can be specified with `--config path/to/config.yaml`.
 
 ## CLI Options
 
-| Option                   | Short | Description              | Default               |
-| ------------------------ | ----- | ------------------------ | --------------------- |
-| `--party NAME`           | `-p`  | Crawl specific party     | -                     |
-| `--all`                  | `-a`  | Crawl all parties        | -                     |
-| `--config PATH`          | `-c`  | Config file path         | `config/parties.yaml` |
-| `--output-dir PATH`      | `-o`  | Output directory         | `output/`             |
-| `--output-format FORMAT` | `-f`  | `markdown`/`html`/`text` | `markdown`            |
-| `--include-pdfs`         | -     | Include PDF crawling     | `false`               |
-| `--no-follow-links`      | -     | Only crawl initial URL   | `false`               |
-| `--depth N`              | -     | Max crawl depth          | `2`                   |
-| `--verbose`              | `-v`  | Verbose logging          | `false`               |
-| `--version`              | -     | Show version             | -                     |
+| Option                   | Short | Description              | Default                                |
+| ------------------------ | ----- | ------------------------ | -------------------------------------- |
+| `--party NAME`           | `-p`  | Crawl specific party     | -                                      |
+| `--all`                  | `-a`  | Crawl all parties        | -                                      |
+| `--config PATH`          | `-c`  | Config file path         | Auto-discover in `./.web-scraber-rag/` |
+| `--output-dir PATH`      | `-o`  | Output directory         | `output/`                              |
+| `--output-format FORMAT` | `-f`  | `markdown`/`html`/`text` | `markdown`                             |
+| `--include-pdfs`         | -     | Include PDF crawling     | `false`                                |
+| `--no-follow-links`      | -     | Only crawl initial URL   | `false`                                |
+| `--depth N`              | -     | Max crawl depth          | `2`                                    |
+| `--verbose`              | `-v`  | Verbose logging          | `false`                                |
+| `--version`              | -     | Show version             | -                                      |
 
 ## Implementation Status
 

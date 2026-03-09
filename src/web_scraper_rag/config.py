@@ -11,11 +11,47 @@ class ConfigError(Exception):
     """Raised when configuration is invalid."""
 
 
-def load_config(config_path: str, verbose: bool = False) -> dict[str, Any]:
+def discover_default_config_path(base_dir: Path | None = None) -> Path:
+    """Discover the default config file in .web-scraber-rag.
+
+    Resolution order:
+    1. ./.web-scraber-rag/sites.yml
+    2. ./.web-scraber-rag/sites.yaml
+    3. first alphanumeric match of ./.web-scraber-rag/*.yml and *.yaml
+    """
+    root = base_dir or Path.cwd()
+    config_dir = root / ".web-scraber-rag"
+
+    if not config_dir.exists() or not config_dir.is_dir():
+        raise ConfigError("Configuration directory not found: .web-scraber-rag")
+
+    preferred_candidates = [config_dir / "sites.yml", config_dir / "sites.yaml"]
+    for candidate in preferred_candidates:
+        if candidate.is_file():
+            return candidate
+
+    wildcard_candidates = sorted(
+        [
+            path
+            for pattern in ("*.yml", "*.yaml")
+            for path in config_dir.glob(pattern)
+            if path.is_file()
+        ],
+        key=lambda path: path.name,
+    )
+
+    if wildcard_candidates:
+        return wildcard_candidates[0]
+
+    raise ConfigError("No YAML config file found in .web-scraber-rag")
+
+
+def load_config(config_path: str | None = None, verbose: bool = False) -> dict[str, Any]:
     """Load configuration from YAML file.
 
     Args:
-        config_path: Path to the configuration file
+        config_path: Path to the configuration file. If omitted, discover a
+            default file in ./.web-scraber-rag
         verbose: Enable verbose logging
 
     Returns:
@@ -24,20 +60,20 @@ def load_config(config_path: str, verbose: bool = False) -> dict[str, Any]:
     Raises:
         ConfigError: If configuration file cannot be loaded or parsed
     """
-    path = Path(config_path)
+    path = Path(config_path) if config_path else discover_default_config_path()
 
     if not path.exists():
-        raise ConfigError(f"Configuration file not found: {config_path}")
+        raise ConfigError(f"Configuration file not found: {path}")
 
     try:
         with open(path, encoding="utf-8") as f:
             config = yaml.safe_load(f)
 
         if not config:
-            raise ConfigError(f"Configuration file is empty: {config_path}")
+            raise ConfigError(f"Configuration file is empty: {path}")
 
         if verbose:
-            print(f"Configuration loaded from: {config_path}", file=sys.stderr)
+            print(f"Configuration loaded from: {path}", file=sys.stderr)
 
         return config
     except yaml.YAMLError as e:
@@ -46,76 +82,91 @@ def load_config(config_path: str, verbose: bool = False) -> dict[str, Any]:
         raise ConfigError(f"Failed to read configuration file: {e}") from e
 
 
-def validate_party_config(party: dict[str, Any]) -> None:
-    """Validate a party configuration object.
+def validate_site_config(site: dict[str, Any]) -> None:
+    """Validate a site configuration object.
 
     Args:
-        party: Party configuration dictionary
+        site: Site configuration dictionary
 
     Raises:
         ConfigError: If required fields are missing
     """
     required_fields = ["name", "website", "depth", "ignore_urls"]
     for field in required_fields:
-        if field not in party:
-            raise ConfigError(f"Party config missing required field: {field}")
+        if field not in site:
+            raise ConfigError(f"Site config missing required field: {field}")
 
-    if not isinstance(party["depth"], int) or party["depth"] < 0:
-        raise ConfigError("Party config field 'depth' must be a non-negative integer")
+    if not isinstance(site["depth"], int) or site["depth"] < 0:
+        raise ConfigError("Site config field 'depth' must be a non-negative integer")
 
-    if not isinstance(party["ignore_urls"], list):
-        raise ConfigError("Party config field 'ignore_urls' must be a list")
+    if not isinstance(site["ignore_urls"], list):
+        raise ConfigError("Site config field 'ignore_urls' must be a list")
 
 
-def get_party_by_name(config: dict[str, Any], party_name: str) -> dict[str, Any]:
-    """Get party configuration by name.
+def get_site_by_name(config: dict[str, Any], site_name: str) -> dict[str, Any]:
+    """Get site configuration by name.
 
     Args:
         config: Full configuration dictionary
-        party_name: Name or identifier of the party
+        site_name: Name or identifier of the site
 
     Returns:
-        Party configuration dictionary
+        Site configuration dictionary
 
     Raises:
-        ConfigError: If party not found in configuration
+        ConfigError: If site not found in configuration
     """
-    if "parties" not in config:
-        raise ConfigError("Configuration has no 'parties' section")
+    if "sites" not in config:
+        raise ConfigError("Configuration has no 'sites' section")
 
-    parties = config["parties"]
-    if not isinstance(parties, list):
-        raise ConfigError("'parties' in configuration must be a list")
+    sites = config["sites"]
+    if not isinstance(sites, list):
+        raise ConfigError("'sites' in configuration must be a list")
 
     # Case-insensitive search by name
-    for party in parties:
-        validate_party_config(party)
-        if party.get("name", "").lower() == party_name.lower():
-            return party
+    for site in sites:
+        validate_site_config(site)
+        if site.get("name", "").lower() == site_name.lower():
+            return site
 
-    raise ConfigError(f"Party not found in configuration: {party_name}")
+    raise ConfigError(f"Site not found in configuration: {site_name}")
 
 
-def get_all_parties(config: dict[str, Any]) -> list[dict[str, Any]]:
-    """Get all party configurations.
+def get_all_sites(config: dict[str, Any]) -> list[dict[str, Any]]:
+    """Get all site configurations.
 
     Args:
         config: Full configuration dictionary
 
     Returns:
-        List of party configuration dictionaries
+        List of site configuration dictionaries
 
     Raises:
         ConfigError: If configuration is invalid
     """
-    if "parties" not in config:
-        raise ConfigError("Configuration has no 'parties' section")
+    if "sites" not in config:
+        raise ConfigError("Configuration has no 'sites' section")
 
-    parties = config["parties"]
-    if not isinstance(parties, list):
-        raise ConfigError("'parties' in configuration must be a list")
+    sites = config["sites"]
+    if not isinstance(sites, list):
+        raise ConfigError("'sites' in configuration must be a list")
 
-    for party in parties:
-        validate_party_config(party)
+    for site in sites:
+        validate_site_config(site)
 
-    return parties
+    return sites
+
+
+def validate_party_config(party: dict[str, Any]) -> None:
+    """Backward-compatible alias for validate_site_config."""
+    validate_site_config(party)
+
+
+def get_party_by_name(config: dict[str, Any], party_name: str) -> dict[str, Any]:
+    """Backward-compatible alias for get_site_by_name."""
+    return get_site_by_name(config, party_name)
+
+
+def get_all_parties(config: dict[str, Any]) -> list[dict[str, Any]]:
+    """Backward-compatible alias for get_all_sites."""
+    return get_all_sites(config)

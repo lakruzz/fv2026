@@ -4,7 +4,7 @@ import argparse
 import sys
 
 from web_scraper_rag import __version__
-from web_scraper_rag.config import load_config
+from web_scraper_rag.config import discover_default_config_path, load_config
 from web_scraper_rag.crawler import crawl_all_parties, crawl_party
 
 
@@ -28,8 +28,8 @@ Examples:
         "-c",
         "--config",
         type=str,
-        default="config/parties.yaml",
-        help="Path to configuration file (default: config/parties.yaml)",
+        default=None,
+        help=("Path to configuration file (default: auto-discover in ./.web-scraber-rag)"),
     )
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument(
@@ -120,8 +120,14 @@ def main(args: list[str] | None = None) -> int:
         verbose = parsed_args.verbose
         quiet = parsed_args.quiet
 
+        config_path = (
+            parsed_args.config
+            if parsed_args.config is not None
+            else str(discover_default_config_path())
+        )
+
         # Load configuration
-        config = load_config(parsed_args.config, verbose=verbose)
+        config = load_config(config_path, verbose=verbose)
 
         # Execute appropriate action
         if parsed_args.party:
@@ -136,6 +142,7 @@ def main(args: list[str] | None = None) -> int:
                 dry_run=parsed_args.dryrun,
                 quiet=quiet,
                 verbose=verbose,
+                config_file=config_path,
             )
         elif parsed_args.all:
             crawl_all_parties(
@@ -148,6 +155,7 @@ def main(args: list[str] | None = None) -> int:
                 dry_run=parsed_args.dryrun,
                 quiet=quiet,
                 verbose=verbose,
+                config_file=config_path,
             )
 
         return 0

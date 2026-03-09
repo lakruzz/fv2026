@@ -81,7 +81,7 @@ class TestParseArguments:
     def test_default_values(self):
         """Test default argument values."""
         args = parse_arguments(["--all"])
-        assert args.config == "config/parties.yaml"
+        assert args.config is None
         assert args.output_dir == "output"
         assert args.output_format == "markdown"
         assert args.include_pdfs is False
@@ -96,4 +96,4 @@ class TestParseArguments:
         assert args.party == "alternativet"
         assert args.output_format == "markdown"
         assert args.output_dir == "/out"
-        assert args.config == "config/parties.yaml"
+        assert args.config is None

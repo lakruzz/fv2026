@@ -1,4 +1,4 @@
-parties:
+sites:
   - name: "Alternativet"
     website: "https://www.alternativet.dk"
     depth: 3
@@ -173,24 +173,6 @@ parties:
       - "manifest"
       - "*.pdf"
     description: "Danish People's Party"
-
-  - name: "Lakruzz"
-    website: "https://www.lakruzz.com"
-    depth: 3
-    ignore_urls:
-      - "/terms/"
-      - "/feed.xml"
-      - "*/assets/*"
-      - "https://agent.lakruzz.com**"
-      - "https://code-conf.lakruzz.com**"
-      - "**.pdf"
-      - "*/tags"
-    domains:
-      - "lakruzz.com"
-      - "www.lakruzz.com"
-    pdf_patterns:
-      - "*.pdf"
-    description: "Test website for crawler validation"
 
 # Global crawling settings
 crawl_settings:

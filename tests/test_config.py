@@ -4,6 +4,7 @@ import pytest
 
 from web_scraper_rag.config import (
     ConfigError,
+    discover_default_config_path,
     get_all_parties,
     get_party_by_name,
     load_config,
@@ -45,6 +46,49 @@ class TestLoadConfig:
 
         with pytest.raises(ConfigError, match="Failed to parse YAML"):
             load_config(str(config_file))
+
+    def test_auto_discover_prefers_sites_yml(self, temp_dir, monkeypatch):
+        """Test discovery prefers sites.yml over other YAML files."""
+        config_dir = temp_dir / ".web-scraber-rag"
+        config_dir.mkdir()
+        (config_dir / "aaa.yaml").write_text("sites: []")
+        (config_dir / "sites.yml").write_text("sites: []")
+        (config_dir / "sites.yaml").write_text("sites: []")
+
+        monkeypatch.chdir(temp_dir)
+
+        assert discover_default_config_path() == (config_dir / "sites.yml")
+
+    def test_auto_discover_falls_back_to_first_alphanumeric(self, temp_dir, monkeypatch):
+        """Test discovery falls back to first alphanumeric YAML filename."""
+        config_dir = temp_dir / ".web-scraber-rag"
+        config_dir.mkdir()
+        (config_dir / "zebra.yaml").write_text("sites: []")
+        (config_dir / "alpha.yml").write_text("sites: []")
+
+        monkeypatch.chdir(temp_dir)
+
+        assert discover_default_config_path() == (config_dir / "alpha.yml")
+
+    def test_auto_discover_missing_directory(self, temp_dir, monkeypatch):
+        """Test discovery fails when .web-scraber-rag does not exist."""
+        monkeypatch.chdir(temp_dir)
+
+        with pytest.raises(ConfigError, match="Configuration directory not found"):
+            discover_default_config_path()
+
+    def test_load_config_auto_discovery(self, temp_dir, monkeypatch):
+        """Test load_config discovers default config when path is omitted."""
+        config_dir = temp_dir / ".web-scraber-rag"
+        config_dir.mkdir()
+        config_file = config_dir / "sites.yaml"
+        config_file.write_text(
+            "sites:\n  - name: Test\n    website: https://example.com\n    depth: 1\n    ignore_urls: []\n"
+        )
+
+        monkeypatch.chdir(temp_dir)
+        config = load_config()
+        assert "sites" in config
 
 
 class TestValidatePartyConfig:
@@ -131,13 +175,13 @@ class TestGetPartyByName:
 
     def test_get_missing_party(self, sample_config):
         """Test getting a non-existent party."""
-        with pytest.raises(ConfigError, match="Party not found"):
+        with pytest.raises(ConfigError, match="Site not found"):
             get_party_by_name(sample_config, "NonExistent")
 
     def test_no_parties_section(self):
-        """Test error when config has no parties section."""
+        """Test error when config has no sites section."""
         config = {}
-        with pytest.raises(ConfigError, match="no 'parties' section"):
+        with pytest.raises(ConfigError, match="no 'sites' section"):
             get_party_by_name(config, "Test")
 
 
@@ -152,13 +196,13 @@ class TestGetAllParties:
         assert parties[1]["name"] == "Enhedslisten"
 
     def test_no_parties_section(self):
-        """Test error when config has no parties section."""
+        """Test error when config has no sites section."""
         config = {}
-        with pytest.raises(ConfigError, match="no 'parties' section"):
+        with pytest.raises(ConfigError, match="no 'sites' section"):
             get_all_parties(config)
 
     def test_invalid_parties_format(self):
-        """Test error when parties is not a list."""
-        config = {"parties": "not a list"}
+        """Test error when sites is not a list."""
+        config = {"sites": "not a list"}
         with pytest.raises(ConfigError, match="must be a list"):
             get_all_parties(config)

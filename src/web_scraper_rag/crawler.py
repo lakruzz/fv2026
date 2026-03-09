@@ -408,6 +408,7 @@ def crawl_party(
     dry_run: bool = False,
     quiet: bool = False,
     verbose: bool = False,
+    config_file: str | None = None,
 ) -> None:
     """Crawl a single party website.
 
@@ -422,10 +423,11 @@ def crawl_party(
         dry_run: Discover crawl/ignore decisions without collecting data
         quiet: Reduce output to minimum
         verbose: Enable verbose logging
+        config_file: Resolved config file path used for this run
     """
-    from web_scraper_rag.config import get_party_by_name
+    from web_scraper_rag.config import get_site_by_name
 
-    party = get_party_by_name(config, party_name)
+    party = get_site_by_name(config, party_name)
 
     # Party-specific depth is default. CLI depth, when provided, acts as global cap.
     effective_depth = party["depth"] if depth is None else min(depth, party["depth"])
@@ -445,6 +447,8 @@ def crawl_party(
     output_file = output_path / f"{party['name'].lower().replace(' ', '_')}.md"
 
     if not quiet:
+        if config_file:
+            print(f"Active config file: {config_file}")
         print(f"Active depth setting: {effective_depth}")
         print(f"Output file: {output_file}")
 
@@ -487,6 +491,7 @@ def crawl_all_parties(
     dry_run: bool = False,
     quiet: bool = False,
     verbose: bool = False,
+    config_file: str | None = None,
 ) -> None:
     """Crawl all parties defined in configuration.
 
@@ -500,10 +505,11 @@ def crawl_all_parties(
         dry_run: Discover crawl/ignore decisions without collecting data
         quiet: Reduce output to minimum
         verbose: Enable verbose logging
+        config_file: Resolved config file path used for this run
     """
-    from web_scraper_rag.config import get_all_parties
+    from web_scraper_rag.config import get_all_sites
 
-    parties = get_all_parties(config)
+    parties = get_all_sites(config)
 
     if verbose:
         print(f"Crawling {len(parties)} parties...", file=sys.stderr)
@@ -520,6 +526,7 @@ def crawl_all_parties(
             dry_run=dry_run,
             quiet=quiet,
             verbose=verbose,
+            config_file=config_file,
         )
 
     if verbose:
