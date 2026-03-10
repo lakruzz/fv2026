@@ -1,5 +1,6 @@
 sites:
   - name: "Lakruzz"
+    description: "Test website for crawler validation"
     website: "https://www.lakruzz.com"
     depth: 3
     ignore_urls:
@@ -13,10 +14,6 @@ sites:
     domains:
       - "lakruzz.com"
       - "www.lakruzz.com"
-    pdf_patterns:
-      - "*.pdf"
-    description: "Test website for crawler validation"
-
 # Global crawling settings
 crawl_settings:
   max_depth: 2

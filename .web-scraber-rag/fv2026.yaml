@@ -1,5 +1,6 @@
 sites:
   - name: "Alternativet"
+    # CloudFlare
     description: "Å: Alternativet"
     website: "https://www.alternativet.dk"
     depth: 3
@@ -23,33 +24,18 @@ sites:
       - "*/vedtaegter**"
       - "*/skoleelever**"
     domains:
-      - "alternativet.dk"
-    pdf_patterns:
-      - "manifest"
-      - "program"
-      - "*.pdf"
+      - "*.alternativet.dk"
 
   - name: "Enhedslisten"
     description: "Ø: Enhedslisten – De Rød-Grønne"
     website: "https://www.enhedslisten.dk"
     ignore_urls:
-      - "**.webp"
-      - "**.jpg"
-      - "https://shop.enhedslisten.dk**"
-      - "https://mit.enhedslisten.dk**"
-      - "https://vores.enhedslisten.dk**"
-      - "https://elevernes.enhedslisten.dk**"
       - "*/kontakt/*"
       - "*/stoet/*"
       - "*/byraad/*"
       - "*/regionsraad/*"
-      - "*/english/*"
-      - "*/cookie**"
-      - "http://**"
     domains:
       - "enhedslisten.dk"
-    pdf_patterns:
-      - "*.pdf"
 
   - name: "Konservative Folkeparti"
     description: "C: Det Konservative Folkeparti"
@@ -61,17 +47,13 @@ sites:
       - "*/presse"
       - "*/kontakt"
       - "*/partistruktur"
-      - "*/ungdomsorganisationer"
-      - "http://**"
-      - "*/wp-content/**"
-      - "https://foto.konservative.dk**"
-      - "https://blivmedlem.konservative.dk**"
-      - "borgmestre"
-      - "byraadsmedlemmer"
-      - "regionsraadsmedlemmer"
-      - "bliv-**"
-      - "bidrag"
-      - "vaer-med**"
+      - "*/ungdomsorganisationer**"
+      - "*/borgmestre**"
+      - "*/byraadsmedlemmer**"
+      - "*/regionsraadsmedlemmer**"
+      - "*/bliv-**"
+      - "*/bidrag"
+      - "*/vaer-med**"
       - "*/personer/**"
       - "*/mitc**"
       - "*/whistleblowerordning"
@@ -96,9 +78,6 @@ sites:
       - "*/it-studentermedhjaelper-til-det-konservative-folkeparti-paa-christiansborg"
       - "*/bliv-praktikant-hos-det-konservative-folkeparti"
       - "*/vi-kan-stadig-na-det"
-      - "https://www.hellebonnesen.konservative.dk/"
-      - "https://frederikmunster.konservative.dk/"
-      - "https://birgittebergman.konservative.dk/"
       - "*/leder-wow-et-valg"
       - "*/borgerlige-stemmer-der-indgaar-finanslov"
       - "*/fra-folketinget-til-europa-parlamentet-det-er-som-at-skulle-op-i-fuldt-pensum"
@@ -106,16 +85,12 @@ sites:
       - "*/hos-mette-og-familien-handler-julen-om-at-glaede-andre"
     domains:
       - "konservative.dk"
-    pdf_patterns:
-      - "program"
-      - "manifest"
-      - "*.pdf"
 
   - name: "Moderaterne"
+
     description: "M: Moderaterne"
     website: "https://moderaterne.dk"
     ignore_urls:
-      - "*/wp-content/*"
       - "*/kommune/*"
       - "*/*login*"
       - "*/20601-2"
@@ -124,18 +99,13 @@ sites:
       - "*/page/*"
     domains:
       - "moderaterne.dk"
-    pdf_patterns:
-      - "*.pdf"
 
   - name: "Radikale Venstre"
     description: "B: Radikale Venstre"
     website: "https://www.radikale.dk"
     ignore_urls:
-      - "http://**"
       - "*/find-din-kandidat"
       - "*/vaer-med/bliv-medlem"
-      - "*/media/*"
-      - "**.pdf"
       - "*/job"
       - "*/presse-logo-og-design/presse"
       - "*/partiet/cookies-og-persondata"
@@ -152,17 +122,11 @@ sites:
       - "*/vaer-med/for-medlemmer"
       - "*/vaer-med/radikale-venstres-talentprogram"
       - "*/job/*"
-      - "**.png"
       - "*/lokalforeninger/*"
       - "*/podcast**"
-      - "**english**"
       - "*/vaer-med"
     domains:
       - "www.radikale.dk"
-    pdf_patterns:
-      - "program"
-      - "manifest"
-      - "*.pdf"
 
   - name: "Socialdemokratiet"
     description: "A: Socialdemokratiet"
@@ -175,30 +139,21 @@ sites:
       - "*/politikere"
       - "*/lokalafdelinger"
       - "*/kontakt"
-      - "*/media/*"
       - "*/pressebetjening**"
       - "*/vaer-med**"
       - "*/lokalafdeinger/*"
     domains:
       - "socialdemokratiet.dk"
-    pdf_patterns:
-      - "program"
-      - "manifest"
-      - "*.pdf"
 
   - name: "Socialistisk Folkeparti"
     description: "F: SF – Socialistisk Folkeparti"
     website: "https://www.sf.dk"
     ignore_urls:
-      - "http://**"
-      - "*/wp-content/*"
       - "*/regionerne/*"
       - "*/partiforeninger/*"
       - "*/sf-furesoe**"
       - "**page_id**"
       - "**post_type**"
-      - "**english**"
-      - "**cookies**"
       - "*/*bliv-**"
       - "*/om-sf/*"
       - "*/giv-**"
@@ -207,14 +162,11 @@ sites:
       - "*/kontakt**"
     domains:
       - "sf.dk"
-    pdf_patterns:
-      - "*.pdf"
 
   - name: "Venstre"
     description: "V: Venstre, Danmarks Liberale Parti"
     website: "https://www.venstre.dk"
     ignore_urls:
-      - "*/_Resources/*"
       - "*/arsberetninger/*"
       - "*/skoleweb/*"
       - "*/lanndsmoede/*"
@@ -251,12 +203,9 @@ sites:
       - "*/vu"
     domains:
       - "www.venstre.dk"
-    pdf_patterns:
-      - "program"
-      - "manifest"
-      - "*.pdf"
 
   - name: "Borgernes Parti"
+    description: "H: Borgernes Parti – Lars Boje Mathiesen"
     website: "https://borgernesparti.dk"
     ignore_urls:
       - "*/author/andreashaladyn"
@@ -264,9 +213,6 @@ sites:
       - "*/page/*"
     domains:
       - "borgernesparti.dk"
-    pdf_patterns:
-      - "*.pdf"
-    description: "H: Borgernes Parti – Lars Boje Mathiesen"
 
   - name: "Dansk Folkeparti"
     description: "O: Dansk Folkeparti"
@@ -280,19 +226,13 @@ sites:
       - "*/presse"
       - "*/privatlivspolitik"
       - "*/patriots-for-europe"
-      - "*/cookiepolitik"
       - "*/page/*"
       - "*/lokalforeninger/*"
-      - "*/medie/*"
       - "*/konkurrencebetingelser"
     domains:
       - "danskfolkeparti.dk"
-    pdf_patterns:
-      - "program"
-      - "manifest"
-      - "*.pdf"
 
-  - name: "Danmarks Demokraterne"
+  - name: "Danmarksdemokraterne"
     description: "Æ: Danmarksdemokraterne – Inger Støjberg"
     website: "https://danmarksdemokraterne.dk"
     ignore_urls:
@@ -310,17 +250,8 @@ sites:
       - "*/forside/abonnementsbetingelser"
       - "*/forside/cookiepolitik"
       - "*/forside/landsmoede-2026"
-      - "*/wp-content/*"
-      - "**presse**"
-      - "**gmail.com**"
-      - "**outlook.dk**"
-      - "**.jpg"
     domains:
       - "danmarksdemokraterne.dk"
-    pdf_patterns:
-      - "program"
-      - "manifest"
-      - "*.pdf"
 
   - name: "Liberal Alliance"
     description: "I: Liberal Alliance"
@@ -329,27 +260,20 @@ sites:
       - "*/landsorganisation/*"
     domains:
       - "liberalalliance.dk"
-    pdf_patterns:
-      - "program"
-      - "manifest"
-      - "*.pdf"
 
 # Global crawling settings
 crawl_settings:
   depth: 3
+  include_pdfs: true
   ignore_urls:
     - "http://**"
-    - "mailto:**"
     - "**facebook.com**"
     - "**x.com**"
     - "**gmail.com**"
     - "**outlook.com**"
+    - "**outlook.dk**"
     - "**cookie**"
     - "*/presse**"
-    - "**.jpg"
-    - "**.jpeg"
-    - "**.png"
-    - "**.webp"
     - "**english**"
     - "*/bliv-**"
     - "*/giv-**"

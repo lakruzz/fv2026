@@ -165,6 +165,16 @@ class TestValidatePartyConfig:
         with pytest.raises(ConfigError, match="field 'ignore_urls' must be"):
             validate_party_config(party)
 
+    def test_invalid_include_pdfs_type(self):
+        """Test validation of party config with invalid include_pdfs type."""
+        party = {
+            "name": "Test Party",
+            "website": "https://example.com",
+            "include_pdfs": "yes",
+        }
+        with pytest.raises(ConfigError, match="field 'include_pdfs' must be"):
+            validate_party_config(party)
+
 
 class TestGetPartyByName:
     """Test getting party by name."""
@@ -222,17 +232,23 @@ class TestGlobalCrawlDefaults:
         """Test reading global depth and ignore defaults."""
         config = {
             "sites": [],
-            "crawl_settings": {"depth": 3, "ignore_urls": ["*/privacy*", "*/terms*"]},
+            "crawl_settings": {
+                "depth": 3,
+                "ignore_urls": ["*/privacy*", "*/terms*"],
+                "include_pdfs": True,
+            },
         }
-        depth, ignore_urls = get_global_crawl_defaults(config)
+        depth, ignore_urls, include_pdfs = get_global_crawl_defaults(config)
         assert depth == 3
         assert ignore_urls == ["*/privacy*", "*/terms*"]
+        assert include_pdfs is True
 
     def test_get_defaults_missing(self):
         """Test defaults when crawl_settings are absent."""
-        depth, ignore_urls = get_global_crawl_defaults({"sites": []})
+        depth, ignore_urls, include_pdfs = get_global_crawl_defaults({"sites": []})
         assert depth is None
         assert ignore_urls == []
+        assert include_pdfs is None
 
     def test_invalid_global_depth(self):
         """Test validation for invalid global depth."""
@@ -244,4 +260,10 @@ class TestGlobalCrawlDefaults:
         """Test validation for invalid global ignore_urls."""
         config = {"sites": [], "crawl_settings": {"ignore_urls": "not-a-list"}}
         with pytest.raises(ConfigError, match="Global crawl setting 'ignore_urls'"):
+            get_global_crawl_defaults(config)
+
+    def test_invalid_global_include_pdfs(self):
+        """Test validation for invalid global include_pdfs."""
+        config = {"sites": [], "crawl_settings": {"include_pdfs": "true"}}
+        with pytest.raises(ConfigError, match="Global crawl setting 'include_pdfs'"):
             get_global_crawl_defaults(config)

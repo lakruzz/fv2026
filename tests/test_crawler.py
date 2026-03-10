@@ -117,6 +117,33 @@ class TestWebCrawler:
         # other.com should not be allowed
         assert crawler._is_valid_url("https://other.com/page", 0) is False
 
+    def test_is_valid_url_literal_domain_does_not_match_arbitrary_subdomains(self):
+        """Test literal domains match exact host and not unrelated subdomains."""
+        from web_scraper_rag.crawler import WebCrawler
+
+        crawler = WebCrawler(
+            start_url="https://enhedslisten.dk",
+            allowed_domains=["enhedslisten.dk"],
+        )
+
+        assert crawler._is_valid_url("https://enhedslisten.dk/politik", 0) is True
+        assert crawler._is_valid_url("https://www.enhedslisten.dk/politik", 0) is True
+        assert crawler._is_valid_url("https://shop.enhedslisten.dk/", 0) is False
+        assert crawler._is_valid_url("https://mit.enhedslisten.dk/", 0) is False
+
+    def test_is_valid_url_glob_domain_matches_subdomains(self):
+        """Test wildcard domains enable explicit subdomain matching."""
+        from web_scraper_rag.crawler import WebCrawler
+
+        crawler = WebCrawler(
+            start_url="https://shop.enhedslisten.dk",
+            allowed_domains=["*.enhedslisten.dk"],
+        )
+
+        assert crawler._is_valid_url("https://shop.enhedslisten.dk/", 0) is True
+        assert crawler._is_valid_url("https://mit.enhedslisten.dk/", 0) is True
+        assert crawler._is_valid_url("https://enhedslisten.dk/", 0) is False
+
     def test_extract_links(self):
         """Test link extraction from HTML."""
         from bs4 import BeautifulSoup
@@ -173,6 +200,54 @@ class TestWebCrawler:
         assert "important text" in content
         assert "Navigation" not in content
         assert "Footer" not in content
+
+    def test_is_pdf_url_detection(self):
+        """Test PDF URL detection based on path suffix."""
+        from web_scraper_rag.crawler import WebCrawler
+
+        crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
+
+        assert crawler._is_pdf_url("https://example.com/files/program.pdf") is True
+        assert crawler._is_pdf_url("https://example.com/files/program.PDF") is True
+        assert crawler._is_pdf_url("https://example.com/page?id=123") is False
+
+    def test_is_valid_url_rejects_known_binary_assets(self):
+        """Test known non-PDF binary assets are skipped automatically."""
+        from web_scraper_rag.crawler import WebCrawler
+
+        crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
+
+        assert crawler._is_valid_url("https://example.com/image.jpg", 0) is False
+        assert crawler._is_valid_url("https://example.com/clip.mov", 0) is False
+        assert crawler._is_valid_url("https://example.com/document.pdf", 0) is True
+
+    def test_process_page_pdf_uses_pdf_parser_when_enabled(self):
+        """Test PDF URLs are parsed via PDF path when include_pdfs is enabled."""
+        from web_scraper_rag.crawler import WebCrawler
+
+        crawler = WebCrawler(
+            start_url="https://example.com",
+            allowed_domains=["example.com"],
+            include_pdfs=True,
+        )
+
+        with patch.object(crawler, "_fetch_pdf_text", return_value=("[PDF] test.pdf", "PDF text")):
+            result = crawler._process_page("https://example.com/test.pdf", 0, [])
+
+        assert result == ("[PDF] test.pdf", "PDF text")
+
+    def test_process_page_pdf_skipped_when_disabled(self):
+        """Test PDF URLs are skipped when include_pdfs is disabled."""
+        from web_scraper_rag.crawler import WebCrawler
+
+        crawler = WebCrawler(
+            start_url="https://example.com",
+            allowed_domains=["example.com"],
+            include_pdfs=False,
+        )
+
+        result = crawler._process_page("https://example.com/test.pdf", 0, [])
+        assert result is None
 
     def test_dryrun_logs_ignore_once(self, capsys):
         """Test dry-run logs ignored URLs once with visual marker."""
@@ -241,6 +316,26 @@ class TestWebCrawler:
         output = capsys.readouterr().err
         assert "❌ [ignore]" in output
         assert "already visited" in output
+
+    def test_dryrun_suppresses_unsupported_scheme_even_verbose(self, capsys):
+        """Test unsupported schemes (e.g., mailto:) are never shown in dry-run output."""
+        from web_scraper_rag.crawler import WebCrawler
+
+        crawler = WebCrawler(
+            start_url="https://example.com",
+            allowed_domains=["example.com"],
+            dry_run=True,
+            verbose=True,
+        )
+
+        crawler._log_dryrun_decision(
+            "mailto:test@example.com",
+            should_crawl=False,
+            reason="unsupported scheme",
+        )
+
+        output = capsys.readouterr().err
+        assert output == ""
 
     def test_detects_cloudflare_challenge_and_reports_once(self, capsys):
         """Test that Cloudflare challenge pages are detected and reported once."""
@@ -454,6 +549,119 @@ class TestCrawlParty:
                 "*/shared*",
                 "*/site-only*",
             ]
+
+    def test_crawl_party_uses_global_include_pdfs_default(self, tmp_path):
+        """Test global include_pdfs is used when CLI flag is omitted."""
+        from web_scraper_rag.crawler import crawl_party
+
+        config = {
+            "sites": [
+                {
+                    "name": "Test Party",
+                    "website": "https://example.com",
+                    "depth": 2,
+                    "ignore_urls": [],
+                    "domains": ["example.com"],
+                }
+            ],
+            "crawl_settings": {"depth": 3, "ignore_urls": [], "include_pdfs": True},
+        }
+
+        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+            mock_crawler = MagicMock()
+            mock_crawler.crawl.return_value = "# Test Content"
+            mock_crawler_class.return_value = mock_crawler
+
+            crawl_party(
+                party_name="Test Party",
+                config=config,
+                output_dir=str(tmp_path / "output"),
+                output_format="markdown",
+                include_pdfs=None,
+                follow_links=True,
+                depth=None,
+                dry_run=False,
+                quiet=False,
+                verbose=False,
+            )
+
+            assert mock_crawler_class.call_args.kwargs["include_pdfs"] is True
+
+    def test_crawl_party_site_include_pdfs_overrides_global(self, tmp_path):
+        """Test site include_pdfs overrides global include_pdfs."""
+        from web_scraper_rag.crawler import crawl_party
+
+        config = {
+            "sites": [
+                {
+                    "name": "Test Party",
+                    "website": "https://example.com",
+                    "depth": 2,
+                    "include_pdfs": False,
+                    "ignore_urls": [],
+                    "domains": ["example.com"],
+                }
+            ],
+            "crawl_settings": {"depth": 3, "ignore_urls": [], "include_pdfs": True},
+        }
+
+        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+            mock_crawler = MagicMock()
+            mock_crawler.crawl.return_value = "# Test Content"
+            mock_crawler_class.return_value = mock_crawler
+
+            crawl_party(
+                party_name="Test Party",
+                config=config,
+                output_dir=str(tmp_path / "output"),
+                output_format="markdown",
+                include_pdfs=None,
+                follow_links=True,
+                depth=None,
+                dry_run=False,
+                quiet=False,
+                verbose=False,
+            )
+
+            assert mock_crawler_class.call_args.kwargs["include_pdfs"] is False
+
+    def test_crawl_party_cli_include_pdfs_overrides_config(self, tmp_path):
+        """Test CLI include_pdfs=True overrides site/global config defaults."""
+        from web_scraper_rag.crawler import crawl_party
+
+        config = {
+            "sites": [
+                {
+                    "name": "Test Party",
+                    "website": "https://example.com",
+                    "depth": 2,
+                    "include_pdfs": False,
+                    "ignore_urls": [],
+                    "domains": ["example.com"],
+                }
+            ],
+            "crawl_settings": {"depth": 3, "ignore_urls": [], "include_pdfs": False},
+        }
+
+        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+            mock_crawler = MagicMock()
+            mock_crawler.crawl.return_value = "# Test Content"
+            mock_crawler_class.return_value = mock_crawler
+
+            crawl_party(
+                party_name="Test Party",
+                config=config,
+                output_dir=str(tmp_path / "output"),
+                output_format="markdown",
+                include_pdfs=True,
+                follow_links=True,
+                depth=None,
+                dry_run=False,
+                quiet=False,
+                verbose=False,
+            )
+
+            assert mock_crawler_class.call_args.kwargs["include_pdfs"] is True
 
 
 class TestCrawlAllParties:

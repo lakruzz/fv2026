@@ -12,13 +12,13 @@ def parse_arguments(args: list[str] | None = None) -> argparse.Namespace:
     """Parse and return command-line arguments."""
     parser = argparse.ArgumentParser(
         prog="web-scraper-rag",
-        description="Web scraper for converting party websites into RAG files for Gemini Gem",
+        description="Web scraper for converting website content into RAG files",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s --party alternativet --output-format markdown
+    %(prog)s --site "my blog" --output-format markdown
   %(prog)s --all --output-format markdown
-  %(prog)s --party alternativet --include-pdfs
+    %(prog)s --site "my blog" --include-pdfs
   %(prog)s --config custom-config.yaml --all --include-pdfs
         """,
     )
@@ -52,13 +52,13 @@ Examples:
         help="Show version and exit",
     )
 
-    # Party selection (mutually exclusive)
+    # Site selection (mutually exclusive)
     selection_group = parser.add_mutually_exclusive_group(required=True)
     selection_group.add_argument(
-        "-p",
-        "--party",
+        "-s",
+        "--site",
         type=str,
-        help="Name of specific party to crawl (e.g., alternativet)",
+        help='Name of specific site entry to crawl (e.g., "my blog")',
     )
     selection_group.add_argument(
         "-a",
@@ -88,7 +88,7 @@ Examples:
     parser.add_argument(
         "--include-pdfs",
         action="store_true",
-        default=False,
+        default=None,
         help="Include PDF crawling and merging",
     )
     parser.add_argument(
@@ -101,7 +101,7 @@ Examples:
         "--depth",
         type=int,
         default=None,
-        help="Maximum crawl depth cap. If omitted, use per-party depth from config",
+        help="Maximum crawl depth cap. If omitted, use per-site depth from config",
     )
     parser.add_argument(
         "--dryrun",
@@ -142,9 +142,9 @@ def main(args: list[str] | None = None) -> int:
         config = load_config(config_path, verbose=verbose)
 
         # Execute appropriate action
-        if parsed_args.party:
+        if parsed_args.site:
             crawl_party(
-                party_name=parsed_args.party,
+                party_name=parsed_args.site,
                 config=config,
                 output_dir=parsed_args.output_dir,
                 output_format=parsed_args.output_format,

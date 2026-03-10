@@ -2,19 +2,47 @@
 
 import sys
 from fnmatch import fnmatch
+from io import BytesIO
 from os import environ
 from pathlib import Path
 from platform import system
 from typing import Any
 from urllib.parse import urljoin, urlparse, urlunparse
+from urllib.request import Request, urlopen
 
 from bs4 import BeautifulSoup
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
+from pypdf import PdfReader
 
 
 class WebCrawler:
     """Crawl a website and extract content as Markdown."""
+
+    KNOWN_BINARY_EXTENSIONS = frozenset(
+        {
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".webp",
+            ".gif",
+            ".mov",
+            ".mp4",
+            ".avi",
+            ".mkv",
+            ".webm",
+            ".mp3",
+            ".wav",
+            ".zip",
+            ".tar",
+            ".gz",
+            ".rar",
+            ".7z",
+            ".exe",
+            ".dmg",
+            ".iso",
+        }
+    )
 
     def __init__(
         self,
@@ -23,6 +51,7 @@ class WebCrawler:
         max_depth: int = 2,
         ignore_urls: list[str] | None = None,
         follow_links: bool = True,
+        include_pdfs: bool = False,
         dry_run: bool = False,
         quiet: bool = False,
         verbose: bool = False,
@@ -37,6 +66,7 @@ class WebCrawler:
             max_depth: Maximum depth to follow links
             ignore_urls: URL prefixes or fragments to skip while crawling
             follow_links: Whether to follow links to other pages
+            include_pdfs: Whether PDF links should be fetched and parsed
             dry_run: Discover crawl decisions without collecting page content
             quiet: Reduce output to minimum
             verbose: Enable verbose logging
@@ -48,6 +78,7 @@ class WebCrawler:
         self.max_depth = max_depth
         self.ignore_urls = ignore_urls or []
         self.follow_links = follow_links
+        self.include_pdfs = include_pdfs
         self.dry_run = dry_run
         self.quiet = quiet
         self.verbose = verbose
@@ -195,9 +226,49 @@ class WebCrawler:
 
         return None
 
+    def _normalize_allowed_domain(self, allowed: str) -> str:
+        """Normalize a configured allowed domain entry for host matching."""
+        normalized = allowed.strip().lower()
+
+        # Accept accidental full URLs in config by extracting the host.
+        if "://" in normalized:
+            parsed_allowed = urlparse(normalized)
+            normalized = parsed_allowed.hostname or ""
+
+        return normalized.rstrip(".")
+
+    def _is_allowed_domain(self, host: str) -> bool:
+        """Return True when host matches one of the configured allowed domains.
+
+        Literal domains are treated as exact host matches. Glob patterns are
+        supported explicitly via wildcard syntax in the configured domain.
+        """
+        normalized_host = host.lower().rstrip(".")
+
+        for allowed in self.allowed_domains:
+            normalized_allowed = self._normalize_allowed_domain(allowed)
+            if not normalized_allowed:
+                continue
+
+            if self._is_glob_pattern(normalized_allowed):
+                if fnmatch(normalized_host, normalized_allowed):
+                    return True
+                continue
+
+            if normalized_host == normalized_allowed:
+                return True
+
+            # Backward-compatible convenience for configs that list the apex
+            # domain while sites resolve to www.<domain>.
+            if normalized_host == f"www.{normalized_allowed}":
+                return True
+
+        return False
+
     def _url_decision(self, url: str, depth: int) -> tuple[bool, str]:
         """Decide whether a URL should be crawled and explain why."""
         normalized_url = self._normalize_url(url)
+        parsed = urlparse(normalized_url)
 
         if depth > self.max_depth:
             return (False, "depth limit exceeded")
@@ -208,15 +279,19 @@ class WebCrawler:
         if normalized_url.startswith(("#", "data:")):
             return (False, "unsupported scheme")
 
+        if parsed.scheme and parsed.scheme not in {"http", "https"}:
+            return (False, "unsupported scheme")
+
         matched_ignore = self._matched_ignore_pattern(normalized_url)
         if matched_ignore:
             return (False, f"ignored by pattern: {matched_ignore}")
 
-        parsed = urlparse(normalized_url)
-        domain = parsed.netloc.lower()
-        for allowed in self.allowed_domains:
-            if domain.endswith(allowed) or domain == allowed:
-                return (True, "allowed")
+        if self._is_known_binary_url(normalized_url):
+            return (False, "unsupported binary type")
+
+        host = parsed.hostname or ""
+        if self._is_allowed_domain(host):
+            return (True, "allowed")
 
         return (False, "outside allowed domains")
 
@@ -287,6 +362,47 @@ class WebCrawler:
         # Clean up whitespace
         lines = (line.strip() for line in content.splitlines())
         return "\n".join(line for line in lines if line)
+
+    def _is_pdf_url(self, url: str) -> bool:
+        """Return True when URL path points to a PDF document."""
+        path = urlparse(url).path.lower()
+        return path.endswith(".pdf")
+
+    def _is_known_binary_url(self, url: str) -> bool:
+        """Return True when URL path points to known non-HTML binary assets."""
+        path = urlparse(url).path.lower()
+        suffix = Path(path).suffix
+        return suffix in self.KNOWN_BINARY_EXTENSIONS
+
+    def _fetch_pdf_text(self, url: str) -> tuple[str, str] | None:
+        """Download and extract text from PDF.
+
+        Returns:
+            Tuple of (title, extracted_text) or None on failure.
+        """
+        try:
+            request = Request(  # noqa: S310 - URL scheme is constrained by crawler domain filtering.
+                url,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (compatible; web-scraper-rag/0.1.0)",
+                },
+            )
+            with urlopen(request) as response:  # noqa: S310 - URL is user-config driven crawl target.
+                pdf_bytes = response.read()
+
+            reader = PdfReader(BytesIO(pdf_bytes))
+            extracted_pages = [page.extract_text() or "" for page in reader.pages]
+            content = "\n".join(page.strip() for page in extracted_pages if page.strip())
+
+            title = f"[PDF] {Path(urlparse(url).path).name or url}"
+            if not content:
+                content = "[No extractable PDF text found]"
+
+            return title, content
+        except Exception as e:
+            if self.verbose:
+                print(f"Error fetching PDF {url}: {e}", file=sys.stderr)
+            return None
 
     def _fetch_page(self, url: str) -> tuple[str, str] | None:
         """Fetch a page and extract content.
@@ -442,6 +558,12 @@ class WebCrawler:
             Tuple of (title, content) if successful, None otherwise
         """
         result = self._fetch_page(url)
+        if self._is_pdf_url(url):
+            if not self.include_pdfs:
+                return None
+
+            return self._fetch_pdf_text(url)
+
         if not result:
             return None
 
@@ -497,6 +619,9 @@ class WebCrawler:
             return
 
         if self.quiet:
+            return
+
+        if reason == "unsupported scheme":
             return
 
         is_pattern_ignore = "ignored by pattern:" in reason
@@ -586,7 +711,7 @@ def crawl_party(
     config: dict[str, Any],
     output_dir: str,
     output_format: str,
-    include_pdfs: bool,
+    include_pdfs: bool | None,
     follow_links: bool,
     depth: int | None,
     dry_run: bool = False,
@@ -616,13 +741,16 @@ def crawl_party(
     from web_scraper_rag.config import get_site_by_name
 
     party = get_site_by_name(config, party_name)
-    effective_depth, merged_ignore_urls = _resolve_site_depth_and_ignores(config, party, depth)
+    effective_depth, merged_ignore_urls, effective_include_pdfs = _resolve_site_depth_and_ignores(
+        config, party, depth, include_pdfs
+    )
 
     _log_crawl_start(
         party=party,
         output_format=output_format,
         dry_run=dry_run,
         include_pdfs=include_pdfs,
+        effective_include_pdfs=effective_include_pdfs,
         verbose=verbose,
     )
 
@@ -631,6 +759,7 @@ def crawl_party(
         quiet=quiet,
         config_file=config_file,
         effective_depth=effective_depth,
+        effective_include_pdfs=effective_include_pdfs,
         output_file=output_file,
     )
 
@@ -641,6 +770,7 @@ def crawl_party(
         max_depth=effective_depth,
         ignore_urls=merged_ignore_urls,
         follow_links=follow_links,
+        include_pdfs=effective_include_pdfs,
         dry_run=dry_run,
         quiet=quiet,
         verbose=verbose,
@@ -666,11 +796,12 @@ def _resolve_site_depth_and_ignores(
     config: dict[str, Any],
     site: dict[str, Any],
     cli_depth: int | None,
-) -> tuple[int, list[str]]:
+    cli_include_pdfs: bool | None,
+) -> tuple[int, list[str], bool]:
     """Resolve effective depth and merged ignore patterns for a site crawl."""
     from web_scraper_rag.config import get_global_crawl_defaults
 
-    global_depth, global_ignore_urls = get_global_crawl_defaults(config)
+    global_depth, global_ignore_urls, global_include_pdfs = get_global_crawl_defaults(config)
 
     site_depth = site.get("depth")
     default_depth = (
@@ -684,14 +815,25 @@ def _resolve_site_depth_and_ignores(
 
     # Site depth overrides global depth; CLI depth acts as a cap.
     effective_depth = default_depth if cli_depth is None else min(cli_depth, default_depth)
-    return effective_depth, merged_ignore_urls
+
+    if cli_include_pdfs is not None:
+        effective_include_pdfs = cli_include_pdfs
+    elif "include_pdfs" in site:
+        effective_include_pdfs = site["include_pdfs"]
+    elif global_include_pdfs is not None:
+        effective_include_pdfs = global_include_pdfs
+    else:
+        effective_include_pdfs = False
+
+    return effective_depth, merged_ignore_urls, effective_include_pdfs
 
 
 def _log_crawl_start(
     party: dict[str, Any],
     output_format: str,
     dry_run: bool,
-    include_pdfs: bool,
+    include_pdfs: bool | None,
+    effective_include_pdfs: bool,
     verbose: bool,
 ) -> None:
     """Emit verbose crawl start details."""
@@ -703,7 +845,9 @@ def _log_crawl_start(
     print(f"  Format: {output_format}", file=sys.stderr)
     if dry_run:
         print("  Dry run mode enabled", file=sys.stderr)
-    if include_pdfs:
+    if include_pdfs is None:
+        print(f"  Include PDFs: {effective_include_pdfs} (from config/default)", file=sys.stderr)
+    elif include_pdfs:
         print("  Including PDFs", file=sys.stderr)
 
 
@@ -718,6 +862,7 @@ def _print_run_header(
     quiet: bool,
     config_file: str | None,
     effective_depth: int,
+    effective_include_pdfs: bool,
     output_file: Path,
 ) -> None:
     """Print standard non-verbose run header to stdout."""
@@ -727,6 +872,7 @@ def _print_run_header(
     if config_file:
         print(f"Active config file: {config_file}")
     print(f"Active depth setting: {effective_depth}")
+    print(f"Include PDFs: {effective_include_pdfs}")
     print(f"Output file: {output_file}")
 
 
@@ -742,7 +888,7 @@ def crawl_all_parties(
     config: dict[str, Any],
     output_dir: str,
     output_format: str,
-    include_pdfs: bool,
+    include_pdfs: bool | None,
     follow_links: bool,
     depth: int | None,
     dry_run: bool = False,

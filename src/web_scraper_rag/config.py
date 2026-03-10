@@ -102,14 +102,18 @@ def validate_site_config(site: dict[str, Any]) -> None:
     if "ignore_urls" in site and not isinstance(site["ignore_urls"], list):
         raise ConfigError("Site config field 'ignore_urls' must be a list")
 
+    if "include_pdfs" in site and not isinstance(site["include_pdfs"], bool):
+        raise ConfigError("Site config field 'include_pdfs' must be a boolean")
 
-def get_global_crawl_defaults(config: dict[str, Any]) -> tuple[int | None, list[str]]:
+
+def get_global_crawl_defaults(config: dict[str, Any]) -> tuple[int | None, list[str], bool | None]:
     """Return global crawl defaults from config.
 
     Global defaults are read from top-level `crawl_settings` and currently
     support:
     - depth (non-negative int)
     - ignore_urls (list[str])
+    - include_pdfs (bool)
     """
     crawl_settings = config.get("crawl_settings", {})
     if not isinstance(crawl_settings, dict):
@@ -123,7 +127,11 @@ def get_global_crawl_defaults(config: dict[str, Any]) -> tuple[int | None, list[
     if not isinstance(ignore_urls, list):
         raise ConfigError("Global crawl setting 'ignore_urls' must be a list")
 
-    return depth, ignore_urls
+    include_pdfs = crawl_settings.get("include_pdfs")
+    if include_pdfs is not None and not isinstance(include_pdfs, bool):
+        raise ConfigError("Global crawl setting 'include_pdfs' must be a boolean")
+
+    return depth, ignore_urls, include_pdfs
 
 
 def get_site_by_name(config: dict[str, Any], site_name: str) -> dict[str, Any]:
