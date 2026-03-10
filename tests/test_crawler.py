@@ -242,6 +242,63 @@ class TestWebCrawler:
         assert "❌ [ignore]" in output
         assert "already visited" in output
 
+    def test_detects_cloudflare_challenge_and_reports_once(self, capsys):
+        """Test that Cloudflare challenge pages are detected and reported once."""
+        from web_scraper_rag.crawler import WebCrawler
+
+        crawler = WebCrawler(
+            start_url="https://example.com",
+            allowed_domains=["example.com"],
+            verbose=False,
+        )
+
+        html = (
+            "<html><head><title>Just a moment...</title></head>"
+            "<body><script src='/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1'></script>"
+            "</body></html>"
+        )
+
+        provider = crawler._detect_bot_challenge(html=html, title="Just a moment...")
+        assert provider == "Cloudflare"
+
+        crawler._report_bot_challenge("https://konservative.dk/", provider)
+        crawler._report_bot_challenge("https://konservative.dk/", provider)
+
+        output = capsys.readouterr().err
+        assert output.count("Challenge detected (Cloudflare)") == 1
+
+    def test_has_graphical_display_false_without_env(self, monkeypatch):
+        """Test display detection when no GUI environment variables are set."""
+        from web_scraper_rag.crawler import WebCrawler
+
+        monkeypatch.setattr("web_scraper_rag.crawler.system", lambda: "Linux")
+        monkeypatch.delenv("DISPLAY", raising=False)
+        monkeypatch.delenv("WAYLAND_DISPLAY", raising=False)
+
+        crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
+        assert crawler._has_graphical_display() is False
+
+    def test_has_graphical_display_true_with_display_env(self, monkeypatch):
+        """Test display detection when DISPLAY is set."""
+        from web_scraper_rag.crawler import WebCrawler
+
+        monkeypatch.setattr("web_scraper_rag.crawler.system", lambda: "Linux")
+        monkeypatch.setenv("DISPLAY", ":0")
+
+        crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
+        assert crawler._has_graphical_display() is True
+
+    def test_has_graphical_display_true_on_macos_without_display_env(self, monkeypatch):
+        """Test display detection accepts macOS native GUI without DISPLAY vars."""
+        from web_scraper_rag.crawler import WebCrawler
+
+        monkeypatch.setattr("web_scraper_rag.crawler.system", lambda: "Darwin")
+        monkeypatch.delenv("DISPLAY", raising=False)
+        monkeypatch.delenv("WAYLAND_DISPLAY", raising=False)
+
+        crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
+        assert crawler._has_graphical_display() is True
+
 
 class TestCrawlParty:
     """Test the crawl_party function."""
@@ -288,6 +345,115 @@ class TestCrawlParty:
 
             # Output file should be created
             assert (tmp_path / "output" / "test_party.md").exists()
+
+    def test_crawl_party_uses_global_depth_when_site_missing_depth(self, tmp_path):
+        """Test global depth is used when site depth is not set."""
+        from web_scraper_rag.crawler import crawl_party
+
+        config = {
+            "sites": [
+                {"name": "Test Party", "website": "https://example.com", "domains": ["example.com"]}
+            ],
+            "crawl_settings": {"depth": 4, "ignore_urls": []},
+        }
+
+        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+            mock_crawler = MagicMock()
+            mock_crawler.crawl.return_value = "# Test Content"
+            mock_crawler_class.return_value = mock_crawler
+
+            crawl_party(
+                party_name="Test Party",
+                config=config,
+                output_dir=str(tmp_path / "output"),
+                output_format="markdown",
+                include_pdfs=False,
+                follow_links=True,
+                depth=None,
+                dry_run=False,
+                quiet=False,
+                verbose=False,
+            )
+
+            assert mock_crawler_class.call_args.kwargs["max_depth"] == 4
+
+    def test_crawl_party_site_depth_overrides_global_depth(self, tmp_path):
+        """Test site depth overrides global depth."""
+        from web_scraper_rag.crawler import crawl_party
+
+        config = {
+            "sites": [
+                {
+                    "name": "Test Party",
+                    "website": "https://example.com",
+                    "depth": 2,
+                    "ignore_urls": [],
+                    "domains": ["example.com"],
+                }
+            ],
+            "crawl_settings": {"depth": 4, "ignore_urls": []},
+        }
+
+        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+            mock_crawler = MagicMock()
+            mock_crawler.crawl.return_value = "# Test Content"
+            mock_crawler_class.return_value = mock_crawler
+
+            crawl_party(
+                party_name="Test Party",
+                config=config,
+                output_dir=str(tmp_path / "output"),
+                output_format="markdown",
+                include_pdfs=False,
+                follow_links=True,
+                depth=None,
+                dry_run=False,
+                quiet=False,
+                verbose=False,
+            )
+
+            assert mock_crawler_class.call_args.kwargs["max_depth"] == 2
+
+    def test_crawl_party_merges_global_and_site_ignore_urls(self, tmp_path):
+        """Test global ignore_urls are supplemented by site ignore_urls."""
+        from web_scraper_rag.crawler import crawl_party
+
+        config = {
+            "sites": [
+                {
+                    "name": "Test Party",
+                    "website": "https://example.com",
+                    "depth": 2,
+                    "ignore_urls": ["*/site-only*", "*/shared*"],
+                    "domains": ["example.com"],
+                }
+            ],
+            "crawl_settings": {"depth": 4, "ignore_urls": ["*/global*", "*/shared*"]},
+        }
+
+        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+            mock_crawler = MagicMock()
+            mock_crawler.crawl.return_value = "# Test Content"
+            mock_crawler_class.return_value = mock_crawler
+
+            crawl_party(
+                party_name="Test Party",
+                config=config,
+                output_dir=str(tmp_path / "output"),
+                output_format="markdown",
+                include_pdfs=False,
+                follow_links=True,
+                depth=None,
+                dry_run=False,
+                quiet=False,
+                verbose=False,
+            )
+
+            assert mock_crawler_class.call_args.kwargs["ignore_urls"] == [
+                "*/global*",
+                "*/shared*",
+                "*/site-only*",
+            ]
 
 
 class TestCrawlAllParties:

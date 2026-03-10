@@ -109,6 +109,18 @@ Examples:
         default=False,
         help="Discover URLs and report crawl/ignore decisions without collecting content",
     )
+    parser.add_argument(
+        "--assisted-browser",
+        action="store_true",
+        default=False,
+        help="Launch a headed persistent browser and allow manual challenge solving before crawl",
+    )
+    parser.add_argument(
+        "--browser-profile",
+        type=str,
+        default=".web-scraber-rag/browser-profile",
+        help="Persistent browser profile directory for assisted runs",
+    )
 
     return parser.parse_args(args)
 
@@ -143,6 +155,8 @@ def main(args: list[str] | None = None) -> int:
                 quiet=quiet,
                 verbose=verbose,
                 config_file=config_path,
+                assisted_browser=parsed_args.assisted_browser,
+                browser_profile=parsed_args.browser_profile,
             )
         elif parsed_args.all:
             crawl_all_parties(
@@ -156,6 +170,8 @@ def main(args: list[str] | None = None) -> int:
                 quiet=quiet,
                 verbose=verbose,
                 config_file=config_path,
+                assisted_browser=parsed_args.assisted_browser,
+                browser_profile=parsed_args.browser_profile,
             )
 
         return 0

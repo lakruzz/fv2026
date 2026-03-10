@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export UV_VENV_CLEAR=1
+export UV_LINK_MODE="copy"
+
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv venv --python 3.11
+. .venv/bin/activate
+uv sync --all-extras
+playwright install

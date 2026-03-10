@@ -6,6 +6,7 @@ from web_scraper_rag.config import (
     ConfigError,
     discover_default_config_path,
     get_all_parties,
+    get_global_crawl_defaults,
     get_party_by_name,
     load_config,
     validate_party_config,
@@ -104,6 +105,14 @@ class TestValidatePartyConfig:
         }
         validate_party_config(party)  # Should not raise
 
+    def test_valid_party_without_depth_and_ignore_urls(self):
+        """Test validation allows site defaults to be provided globally."""
+        party = {
+            "name": "Test Party",
+            "website": "https://example.com",
+        }
+        validate_party_config(party)  # Should not raise
+
     def test_missing_name(self):
         """Test validation of party config missing name."""
         party = {"website": "https://example.com"}
@@ -117,24 +126,22 @@ class TestValidatePartyConfig:
             validate_party_config(party)
 
     def test_missing_depth(self):
-        """Test validation of party config missing depth."""
+        """Test missing depth is allowed (can come from global defaults)."""
         party = {
             "name": "Test Party",
             "website": "https://example.com",
             "ignore_urls": [],
         }
-        with pytest.raises(ConfigError, match="missing required field: depth"):
-            validate_party_config(party)
+        validate_party_config(party)  # Should not raise
 
     def test_missing_ignore_urls(self):
-        """Test validation of party config missing ignore_urls."""
+        """Test missing ignore_urls is allowed (can come from global defaults)."""
         party = {
             "name": "Test Party",
             "website": "https://example.com",
             "depth": 2,
         }
-        with pytest.raises(ConfigError, match="missing required field: ignore_urls"):
-            validate_party_config(party)
+        validate_party_config(party)  # Should not raise
 
     def test_invalid_depth_type(self):
         """Test validation of party config with invalid depth type."""
@@ -206,3 +213,35 @@ class TestGetAllParties:
         config = {"sites": "not a list"}
         with pytest.raises(ConfigError, match="must be a list"):
             get_all_parties(config)
+
+
+class TestGlobalCrawlDefaults:
+    """Test global crawl defaults."""
+
+    def test_get_defaults_present(self):
+        """Test reading global depth and ignore defaults."""
+        config = {
+            "sites": [],
+            "crawl_settings": {"depth": 3, "ignore_urls": ["*/privacy*", "*/terms*"]},
+        }
+        depth, ignore_urls = get_global_crawl_defaults(config)
+        assert depth == 3
+        assert ignore_urls == ["*/privacy*", "*/terms*"]
+
+    def test_get_defaults_missing(self):
+        """Test defaults when crawl_settings are absent."""
+        depth, ignore_urls = get_global_crawl_defaults({"sites": []})
+        assert depth is None
+        assert ignore_urls == []
+
+    def test_invalid_global_depth(self):
+        """Test validation for invalid global depth."""
+        config = {"sites": [], "crawl_settings": {"depth": -1}}
+        with pytest.raises(ConfigError, match="Global crawl setting 'depth'"):
+            get_global_crawl_defaults(config)
+
+    def test_invalid_global_ignore_urls(self):
+        """Test validation for invalid global ignore_urls."""
+        config = {"sites": [], "crawl_settings": {"ignore_urls": "not-a-list"}}
+        with pytest.raises(ConfigError, match="Global crawl setting 'ignore_urls'"):
+            get_global_crawl_defaults(config)

@@ -91,16 +91,39 @@ def validate_site_config(site: dict[str, Any]) -> None:
     Raises:
         ConfigError: If required fields are missing
     """
-    required_fields = ["name", "website", "depth", "ignore_urls"]
+    required_fields = ["name", "website"]
     for field in required_fields:
         if field not in site:
             raise ConfigError(f"Site config missing required field: {field}")
 
-    if not isinstance(site["depth"], int) or site["depth"] < 0:
+    if "depth" in site and (not isinstance(site["depth"], int) or site["depth"] < 0):
         raise ConfigError("Site config field 'depth' must be a non-negative integer")
 
-    if not isinstance(site["ignore_urls"], list):
+    if "ignore_urls" in site and not isinstance(site["ignore_urls"], list):
         raise ConfigError("Site config field 'ignore_urls' must be a list")
+
+
+def get_global_crawl_defaults(config: dict[str, Any]) -> tuple[int | None, list[str]]:
+    """Return global crawl defaults from config.
+
+    Global defaults are read from top-level `crawl_settings` and currently
+    support:
+    - depth (non-negative int)
+    - ignore_urls (list[str])
+    """
+    crawl_settings = config.get("crawl_settings", {})
+    if not isinstance(crawl_settings, dict):
+        raise ConfigError("'crawl_settings' in configuration must be a mapping")
+
+    depth = crawl_settings.get("depth")
+    if depth is not None and (not isinstance(depth, int) or depth < 0):
+        raise ConfigError("Global crawl setting 'depth' must be a non-negative integer")
+
+    ignore_urls = crawl_settings.get("ignore_urls", [])
+    if not isinstance(ignore_urls, list):
+        raise ConfigError("Global crawl setting 'ignore_urls' must be a list")
+
+    return depth, ignore_urls
 
 
 def get_site_by_name(config: dict[str, Any], site_name: str) -> dict[str, Any]:

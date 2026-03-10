@@ -63,6 +63,23 @@ class TestParseArguments:
         args = parse_arguments(["--party", "alternativet", "--depth", "5"])
         assert args.depth == 5
 
+    def test_assisted_browser_flag(self):
+        """Test assisted browser mode flag."""
+        args = parse_arguments(["--party", "alternativet", "--assisted-browser"])
+        assert args.assisted_browser is True
+
+    def test_browser_profile_option(self):
+        """Test custom browser profile path."""
+        args = parse_arguments(
+            [
+                "--party",
+                "alternativet",
+                "--browser-profile",
+                ".web-scraber-rag/custom-profile",
+            ]
+        )
+        assert args.browser_profile == ".web-scraber-rag/custom-profile"
+
     def test_mutually_exclusive_party_all(self):
         """Test that --party and --all are mutually exclusive."""
         with pytest.raises(SystemExit):
@@ -89,6 +106,8 @@ class TestParseArguments:
         assert args.quiet is False
         assert args.dryrun is False
         assert args.depth is None
+        assert args.assisted_browser is False
+        assert args.browser_profile == ".web-scraber-rag/browser-profile"
 
     def test_short_options(self):
         """Test short option aliases."""

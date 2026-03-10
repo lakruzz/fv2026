@@ -2,11 +2,14 @@
 
 import sys
 from fnmatch import fnmatch
+from os import environ
 from pathlib import Path
+from platform import system
 from typing import Any
 from urllib.parse import urljoin, urlparse, urlunparse
 
 from bs4 import BeautifulSoup
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 
@@ -23,6 +26,8 @@ class WebCrawler:
         dry_run: bool = False,
         quiet: bool = False,
         verbose: bool = False,
+        assisted_browser: bool = False,
+        browser_profile: str = ".web-scraber-rag/browser-profile",
     ):
         """Initialize the crawler.
 
@@ -35,6 +40,8 @@ class WebCrawler:
             dry_run: Discover crawl decisions without collecting page content
             quiet: Reduce output to minimum
             verbose: Enable verbose logging
+            assisted_browser: Launch headed browser with manual checkpoint before crawling
+            browser_profile: Persistent browser profile directory
         """
         self.start_url = start_url
         self.allowed_domains = allowed_domains
@@ -44,9 +51,97 @@ class WebCrawler:
         self.dry_run = dry_run
         self.quiet = quiet
         self.verbose = verbose
+        self.assisted_browser = assisted_browser
+        self.browser_profile = browser_profile
         self.visited_urls = set()
         self.reported_urls = set()
+        self.reported_challenges = set()
         self.content_pages = []  # List of (url, title, content) tuples
+        self._assisted_playwright: Any | None = None
+        self._assisted_context: Any | None = None
+        self._assisted_page: Any | None = None
+
+    def _create_page(self, playwright: Any) -> tuple[Any, Any]:
+        """Create a non-assisted page and return (owner, page)."""
+        browser = playwright.chromium.launch()
+        page = browser.new_page()
+        return browser, page
+
+    def _prepare_assisted_session(self) -> None:
+        """Open a headed browser once so user can solve anti-bot challenges."""
+        if not self.assisted_browser:
+            return
+
+        if not self._has_graphical_display():
+            raise RuntimeError(
+                "Assisted browser requires a graphical display (DISPLAY/WAYLAND_DISPLAY not set). "
+                "In a devcontainer this usually means no X server is available. "
+                "Use normal mode, run assisted mode on a host with GUI, or configure GUI forwarding/noVNC."
+            )
+
+        if not self.quiet:
+            print(
+                "Assisted browser mode: a browser window will open. Solve any challenge, then press Enter.",
+                file=sys.stderr,
+            )
+
+        Path(self.browser_profile).mkdir(parents=True, exist_ok=True)
+        self._assisted_playwright = sync_playwright().start()
+        self._assisted_context = self._launch_assisted_context()
+        # Reduce trivial webdriver-based bot detection signals.
+        self._assisted_context.add_init_script(
+            "Object.defineProperty(navigator, 'webdriver', { get: () => undefined });"
+        )
+        self._assisted_page = self._assisted_context.new_page()
+        try:
+            self._goto_with_fallback(self._assisted_page, self.start_url)
+        except Exception as e:  # pragma: no cover - best effort UX step
+            if self.verbose:
+                print(f"Assisted browser warmup failed: {e}", file=sys.stderr)
+
+        if sys.stdin.isatty():
+            input("Press Enter to continue crawling... ")
+        elif self.verbose:
+            print("No interactive terminal detected; continuing without pause.", file=sys.stderr)
+
+    def _teardown_assisted_session(self) -> None:
+        """Close persistent assisted browser session resources."""
+        if self._assisted_context is not None:
+            self._assisted_context.close()
+            self._assisted_context = None
+            self._assisted_page = None
+
+        if self._assisted_playwright is not None:
+            self._assisted_playwright.stop()
+            self._assisted_playwright = None
+
+    def _launch_assisted_context(self) -> Any:
+        """Launch assisted persistent context with conservative anti-detection settings.
+
+        Prefer system Chrome channel when available, then fall back to bundled
+        Chromium so assisted mode remains portable.
+        """
+        launch_kwargs = {
+            "user_data_dir": self.browser_profile,
+            "headless": False,
+            "ignore_default_args": ["--enable-automation"],
+            "args": ["--disable-blink-features=AutomationControlled"],
+        }
+
+        try:
+            return self._assisted_playwright.chromium.launch_persistent_context(
+                channel="chrome", **launch_kwargs
+            )
+        except Exception:
+            return self._assisted_playwright.chromium.launch_persistent_context(**launch_kwargs)
+
+    def _has_graphical_display(self) -> bool:
+        """Return True when a graphical display is available for headed browser runs."""
+        # macOS and Windows provide native windowing without DISPLAY/WAYLAND vars.
+        if system() in {"Darwin", "Windows"}:
+            return True
+
+        return bool(environ.get("DISPLAY") or environ.get("WAYLAND_DISPLAY"))
 
     def _normalize_url(self, url: str) -> str:
         """Normalize URL for stable dedup and matching."""
@@ -203,17 +298,28 @@ class WebCrawler:
             Tuple of (title, content) or None if failed
         """
         try:
-            with sync_playwright() as p:
-                browser = p.chromium.launch()
-                page = browser.new_page()
-                page.goto(url, wait_until="networkidle")
+            if self._assisted_page is not None:
+                page = self._assisted_page
+                self._goto_with_fallback(page, url)
 
-                # Get title
                 title = page.title()
-
-                # Get HTML
                 html = page.content()
-                browser.close()
+            else:
+                with sync_playwright() as p:
+                    owner, page = self._create_page(p)
+                    self._goto_with_fallback(page, url)
+
+                    # Get title
+                    title = page.title()
+
+                    # Get HTML
+                    html = page.content()
+                    owner.close()
+
+            challenge_provider = self._detect_bot_challenge(html=html, title=title)
+            if challenge_provider:
+                self._report_bot_challenge(url=url, provider=challenge_provider)
+                return None
 
             # Parse with BeautifulSoup
             soup = BeautifulSoup(html, "html.parser")
@@ -227,6 +333,66 @@ class WebCrawler:
                 print(f"Error fetching {url}: {e}", file=sys.stderr)
             return None
 
+    def _detect_bot_challenge(self, html: str, title: str = "") -> str | None:
+        """Detect common anti-bot interstitial pages.
+
+        Returns provider name when detected, otherwise None.
+        """
+        lowered_html = html.lower()
+        lowered_title = title.lower()
+
+        if (
+            "cf-mitigated" in lowered_html
+            or "__cf_chl_" in lowered_html
+            or "cdn-cgi/challenge-platform" in lowered_html
+            or "just a moment" in lowered_title
+            or "enable javascript and cookies to continue" in lowered_html
+        ):
+            return "Cloudflare"
+
+        return None
+
+    def _report_bot_challenge(self, url: str, provider: str) -> None:
+        """Log anti-bot challenge detection once per URL."""
+        if url in self.reported_challenges:
+            return
+
+        if not self.quiet:
+            print(
+                f"Challenge detected ({provider}) at {url}; crawl results may be incomplete.",
+                file=sys.stderr,
+            )
+
+        self.reported_challenges.add(url)
+
+    def _goto_with_fallback(self, page: Any, url: str) -> None:
+        """Navigate with fallback strategies for sites that never become network-idle.
+
+        Some sites keep long-running network connections open (analytics, beacons,
+        live widgets), so `networkidle` may timeout even though content is ready.
+        """
+        try:
+            page.goto(url, wait_until="networkidle")
+            return
+        except PlaywrightTimeoutError:
+            if self.verbose:
+                print(
+                    f"Timeout waiting for networkidle on {url}; retrying with domcontentloaded",
+                    file=sys.stderr,
+                )
+
+        try:
+            page.goto(url, wait_until="domcontentloaded")
+            return
+        except PlaywrightTimeoutError:
+            if self.verbose:
+                print(
+                    f"Timeout waiting for domcontentloaded on {url}; retrying with load",
+                    file=sys.stderr,
+                )
+
+        page.goto(url, wait_until="load")
+
     def _fetch_and_extract_links(self, url: str) -> list[str]:
         """Fetch a page and extract links from it.
 
@@ -237,13 +403,26 @@ class WebCrawler:
             List of links found on the page
         """
         try:
-            with sync_playwright() as p:
-                browser = p.chromium.launch()
-                page = browser.new_page()
-                page.goto(url, wait_until="networkidle")
-                soup = BeautifulSoup(page.content(), "html.parser")
-                browser.close()
-                return self._extract_links(soup, url)
+            if self._assisted_page is not None:
+                page = self._assisted_page
+                self._goto_with_fallback(page, url)
+                html = page.content()
+                title = page.title()
+            else:
+                with sync_playwright() as p:
+                    owner, page = self._create_page(p)
+                    self._goto_with_fallback(page, url)
+                    html = page.content()
+                    title = page.title()
+                    owner.close()
+
+            challenge_provider = self._detect_bot_challenge(html=html, title=title)
+            if challenge_provider:
+                self._report_bot_challenge(url=url, provider=challenge_provider)
+                return []
+
+            soup = BeautifulSoup(html, "html.parser")
+            return self._extract_links(soup, url)
         except Exception as e:
             if self.verbose:
                 print(f"Error fetching links from {url}: {e}", file=sys.stderr)
@@ -377,16 +556,21 @@ class WebCrawler:
         if self.verbose:
             print(f"Starting crawl from: {self.start_url}", file=sys.stderr)
 
-        while to_visit:
-            url, depth = to_visit.pop(0)
-            url = self._normalize_url(url)
+        self._prepare_assisted_session()
 
-            should_crawl, reason = self._url_decision(url, depth)
-            if not should_crawl:
-                self._handle_skipped_url(url, depth, reason)
-                continue
+        try:
+            while to_visit:
+                url, depth = to_visit.pop(0)
+                url = self._normalize_url(url)
 
-            self._handle_crawlable_url(url, depth, to_visit, markdown_content)
+                should_crawl, reason = self._url_decision(url, depth)
+                if not should_crawl:
+                    self._handle_skipped_url(url, depth, reason)
+                    continue
+
+                self._handle_crawlable_url(url, depth, to_visit, markdown_content)
+        finally:
+            self._teardown_assisted_session()
 
         # Consolidate all content
         final_markdown = "\n\n---\n\n".join(markdown_content)
@@ -409,6 +593,8 @@ def crawl_party(
     quiet: bool = False,
     verbose: bool = False,
     config_file: str | None = None,
+    assisted_browser: bool = False,
+    browser_profile: str = ".web-scraber-rag/browser-profile",
 ) -> None:
     """Crawl a single party website.
 
@@ -424,54 +610,49 @@ def crawl_party(
         quiet: Reduce output to minimum
         verbose: Enable verbose logging
         config_file: Resolved config file path used for this run
+        assisted_browser: Use interactive headed browser before crawl
+        browser_profile: Persistent browser profile directory
     """
     from web_scraper_rag.config import get_site_by_name
 
     party = get_site_by_name(config, party_name)
+    effective_depth, merged_ignore_urls = _resolve_site_depth_and_ignores(config, party, depth)
 
-    # Party-specific depth is default. CLI depth, when provided, acts as global cap.
-    effective_depth = party["depth"] if depth is None else min(depth, party["depth"])
+    _log_crawl_start(
+        party=party,
+        output_format=output_format,
+        dry_run=dry_run,
+        include_pdfs=include_pdfs,
+        verbose=verbose,
+    )
 
-    if verbose:
-        print(f"Crawling party: {party['name']}", file=sys.stderr)
-        print(f"  Website: {party['website']}", file=sys.stderr)
-        print(f"  Format: {output_format}", file=sys.stderr)
-        if dry_run:
-            print("  Dry run mode enabled", file=sys.stderr)
-        if include_pdfs:
-            print("  Including PDFs", file=sys.stderr)
-
-    # Create output directory
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
-    output_file = output_path / f"{party['name'].lower().replace(' ', '_')}.md"
-
-    if not quiet:
-        if config_file:
-            print(f"Active config file: {config_file}")
-        print(f"Active depth setting: {effective_depth}")
-        print(f"Output file: {output_file}")
+    output_file = _prepare_output_file(output_dir, party["name"])
+    _print_run_header(
+        quiet=quiet,
+        config_file=config_file,
+        effective_depth=effective_depth,
+        output_file=output_file,
+    )
 
     # Create crawler
     crawler = WebCrawler(
         start_url=party["website"],
         allowed_domains=party.get("domains", []),
         max_depth=effective_depth,
-        ignore_urls=party.get("ignore_urls", []),
+        ignore_urls=merged_ignore_urls,
         follow_links=follow_links,
         dry_run=dry_run,
         quiet=quiet,
         verbose=verbose,
+        assisted_browser=assisted_browser,
+        browser_profile=browser_profile,
     )
 
     # Crawl the site
     content = crawler.crawl()
 
     if dry_run:
-        if not quiet:
-            print("Dry run complete. Output file was not written.")
-        elif verbose:
-            print("Dry run complete. No output file written.", file=sys.stderr)
+        _handle_dry_run_completion(quiet=quiet, verbose=verbose)
         return
 
     # Save to file
@@ -479,6 +660,82 @@ def crawl_party(
 
     if verbose:
         print(f"Saved to: {output_file}", file=sys.stderr)
+
+
+def _resolve_site_depth_and_ignores(
+    config: dict[str, Any],
+    site: dict[str, Any],
+    cli_depth: int | None,
+) -> tuple[int, list[str]]:
+    """Resolve effective depth and merged ignore patterns for a site crawl."""
+    from web_scraper_rag.config import get_global_crawl_defaults
+
+    global_depth, global_ignore_urls = get_global_crawl_defaults(config)
+
+    site_depth = site.get("depth")
+    default_depth = (
+        site_depth if site_depth is not None else (global_depth if global_depth is not None else 2)
+    )
+
+    merged_ignore_urls = list(global_ignore_urls)
+    for pattern in site.get("ignore_urls", []):
+        if pattern not in merged_ignore_urls:
+            merged_ignore_urls.append(pattern)
+
+    # Site depth overrides global depth; CLI depth acts as a cap.
+    effective_depth = default_depth if cli_depth is None else min(cli_depth, default_depth)
+    return effective_depth, merged_ignore_urls
+
+
+def _log_crawl_start(
+    party: dict[str, Any],
+    output_format: str,
+    dry_run: bool,
+    include_pdfs: bool,
+    verbose: bool,
+) -> None:
+    """Emit verbose crawl start details."""
+    if not verbose:
+        return
+
+    print(f"Crawling party: {party['name']}", file=sys.stderr)
+    print(f"  Website: {party['website']}", file=sys.stderr)
+    print(f"  Format: {output_format}", file=sys.stderr)
+    if dry_run:
+        print("  Dry run mode enabled", file=sys.stderr)
+    if include_pdfs:
+        print("  Including PDFs", file=sys.stderr)
+
+
+def _prepare_output_file(output_dir: str, party_name: str) -> Path:
+    """Create output directory and return target markdown file path."""
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    return output_path / f"{party_name.lower().replace(' ', '_')}.md"
+
+
+def _print_run_header(
+    quiet: bool,
+    config_file: str | None,
+    effective_depth: int,
+    output_file: Path,
+) -> None:
+    """Print standard non-verbose run header to stdout."""
+    if quiet:
+        return
+
+    if config_file:
+        print(f"Active config file: {config_file}")
+    print(f"Active depth setting: {effective_depth}")
+    print(f"Output file: {output_file}")
+
+
+def _handle_dry_run_completion(quiet: bool, verbose: bool) -> None:
+    """Print dry-run completion message according to verbosity settings."""
+    if not quiet:
+        print("Dry run complete. Output file was not written.")
+    elif verbose:
+        print("Dry run complete. No output file written.", file=sys.stderr)
 
 
 def crawl_all_parties(
@@ -492,6 +749,8 @@ def crawl_all_parties(
     quiet: bool = False,
     verbose: bool = False,
     config_file: str | None = None,
+    assisted_browser: bool = False,
+    browser_profile: str = ".web-scraber-rag/browser-profile",
 ) -> None:
     """Crawl all parties defined in configuration.
 
@@ -506,6 +765,8 @@ def crawl_all_parties(
         quiet: Reduce output to minimum
         verbose: Enable verbose logging
         config_file: Resolved config file path used for this run
+        assisted_browser: Use interactive headed browser before crawl
+        browser_profile: Persistent browser profile directory
     """
     from web_scraper_rag.config import get_all_sites
 
@@ -527,6 +788,8 @@ def crawl_all_parties(
             quiet=quiet,
             verbose=verbose,
             config_file=config_file,
+            assisted_browser=assisted_browser,
+            browser_profile=browser_profile,
         )
 
     if verbose:

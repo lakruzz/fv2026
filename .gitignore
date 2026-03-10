@@ -74,3 +74,4 @@ dmypy.json
 # Output directories
 output/
 temp/
+*browser-profile

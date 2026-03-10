@@ -1,5 +1,6 @@
 sites:
   - name: "Alternativet"
+    description: "Å: Alternativet"
     website: "https://www.alternativet.dk"
     depth: 3
     ignore_urls:
@@ -27,11 +28,10 @@ sites:
       - "manifest"
       - "program"
       - "*.pdf"
-    description: "The Alternative – An idealistic political party"
 
   - name: "Enhedslisten"
+    description: "Ø: Enhedslisten – De Rød-Grønne"
     website: "https://www.enhedslisten.dk"
-    depth: 3
     ignore_urls:
       - "**.webp"
       - "**.jpg"
@@ -50,137 +50,326 @@ sites:
       - "enhedslisten.dk"
     pdf_patterns:
       - "*.pdf"
-    description: "The Unity List – A Danish left-wing political alliance"
-
-  - name: "Frie Grønne"
-    website: "https://friegronne.dk"
-    depth: 3
-    ignore_urls:
-      - "**.pdf"
-      - "**donation**"
-      - "*/nyheder**"
-      - "**2024**"
-      - "**2025**"
-      - "*/kontakt**"
-      - "**vaelgererklaering**"
-      - "*/bliv-**"
-      - "*page_id**"
-      - "*/kommunalvalgskandidater**"
-
-    domains:
-      - "friegronne.dk"
-    pdf_patterns:
-      - "*.pdf"
-    description: "Free Greens – The Liberal Green Party"
 
   - name: "Konservative Folkeparti"
-    website: "https://www.konservative.dk"
-    depth: 2
-    ignore_urls: []
+    description: "C: Det Konservative Folkeparti"
+    website: "https://konservative.dk/partiprogram/"
+    ignore_urls:
+      - "*/voresc"
+      - "*/bidrag"
+      - "*/skole"
+      - "*/presse"
+      - "*/kontakt"
+      - "*/partistruktur"
+      - "*/ungdomsorganisationer"
+      - "http://**"
+      - "*/wp-content/**"
+      - "https://foto.konservative.dk**"
+      - "https://blivmedlem.konservative.dk**"
+      - "borgmestre"
+      - "byraadsmedlemmer"
+      - "regionsraadsmedlemmer"
+      - "bliv-**"
+      - "bidrag"
+      - "vaer-med**"
+      - "*/personer/**"
+      - "*/mitc**"
+      - "*/whistleblowerordning"
+      - "*/internationalt-engagement"
+      - "*/ansatte"
+      - "*/storkreds"
+      - "*/region"
+      - "*/kommune"
+      - "*/english"
+      - "*/vedtaegter"
+      - "*/arsregnskaber"
+      - "*/samvaerspolitik"
+      - "*/partiformaend"
+      - "*/politiske-ledere"
+      - "*/oversigt-over-tidligere-konservative-ministre"
+      - "*/politikere"
+      - "*/folketingsmedlemmer"
+      - "*/folketingskandidater"
+      - "*/perspektiv"
+      - "*/nyheder"
+      - "*/bliv-praktikant-hos-europa-parlamentariker-niels-flemming-hansen"
+      - "*/it-studentermedhjaelper-til-det-konservative-folkeparti-paa-christiansborg"
+      - "*/bliv-praktikant-hos-det-konservative-folkeparti"
+      - "*/vi-kan-stadig-na-det"
+      - "https://www.hellebonnesen.konservative.dk/"
+      - "https://frederikmunster.konservative.dk/"
+      - "https://birgittebergman.konservative.dk/"
+      - "*/leder-wow-et-valg"
+      - "*/borgerlige-stemmer-der-indgaar-finanslov"
+      - "*/fra-folketinget-til-europa-parlamentet-det-er-som-at-skulle-op-i-fuldt-pensum"
+      - "*/landsraad-2025-starten-paa-et-spaendende-kapitel-i-konservativ-politik"
+      - "*/hos-mette-og-familien-handler-julen-om-at-glaede-andre"
     domains:
       - "konservative.dk"
     pdf_patterns:
       - "program"
       - "manifest"
       - "*.pdf"
-    description: "Conservative People's Party"
-
-  - name: "Kristendemokraterne"
-    website: "https://www.krfd.dk"
-    depth: 2
-    ignore_urls: []
-    domains:
-      - "krfd.dk"
-    pdf_patterns:
-      - "*.pdf"
-    description: "Christian Democrats"
 
   - name: "Moderaterne"
+    description: "M: Moderaterne"
     website: "https://moderaterne.dk"
-    depth: 2
-    ignore_urls: []
+    ignore_urls:
+      - "*/wp-content/*"
+      - "*/kommune/*"
+      - "*/*login*"
+      - "*/20601-2"
+      - "*/betingelser"
+      - "*/video-karrusel"
+      - "*/page/*"
     domains:
       - "moderaterne.dk"
     pdf_patterns:
       - "*.pdf"
-    description: "The Moderates – A centrist political party"
 
   - name: "Radikale Venstre"
+    description: "B: Radikale Venstre"
     website: "https://www.radikale.dk"
-    depth: 2
-    ignore_urls: []
+    ignore_urls:
+      - "http://**"
+      - "*/find-din-kandidat"
+      - "*/vaer-med/bliv-medlem"
+      - "*/media/*"
+      - "**.pdf"
+      - "*/job"
+      - "*/presse-logo-og-design/presse"
+      - "*/partiet/cookies-og-persondata"
+      - "*/partiet/internationalt/alde-samarbejdet"
+      - "*/presse-logo-og-design/logo-og-design"
+      - "*/politik/vedtagelser"
+      - "*/partiet/vedtaegter"
+      - "*/partiet/aarsrapporter-og-donationer"
+      - "*/partiet/radikal-ungdom"
+      - "*/partiet/retningslinjer-for-haandtering-af-sager-i-radikale-venstre"
+      - "*/vaer-med/bliv-frivillig"
+      - "*/vaer-med/bliv-kandidat"
+      - "*/vaer-med/stoet-os"
+      - "*/vaer-med/for-medlemmer"
+      - "*/vaer-med/radikale-venstres-talentprogram"
+      - "*/job/*"
+      - "**.png"
+      - "*/lokalforeninger/*"
+      - "*/podcast**"
+      - "**english**"
+      - "*/vaer-med"
     domains:
-      - "radikale.dk"
+      - "www.radikale.dk"
     pdf_patterns:
       - "program"
       - "manifest"
       - "*.pdf"
-    description: "The Radical Left – A centrist, progressive party"
 
-  - name: "Socialdemokraterne"
-    website: "https://www.socialdemokraterne.dk"
-    depth: 2
-    ignore_urls: []
+  - name: "Socialdemokratiet"
+    description: "A: Socialdemokratiet"
+    website: "https://www.socialdemokratiet.dk/"
+    depth: 3
+    ignore_urls:
+      - "*/om-os"
+      - "*/vaer-med"
+      - "*/a-listen/donation"
+      - "*/politikere"
+      - "*/lokalafdelinger"
+      - "*/kontakt"
+      - "*/media/*"
+      - "*/pressebetjening**"
+      - "*/vaer-med**"
+      - "*/lokalafdeinger/*"
     domains:
-      - "socialdemokraterne.dk"
+      - "socialdemokratiet.dk"
     pdf_patterns:
       - "program"
       - "manifest"
       - "*.pdf"
-    description: "The Social Democrats"
 
   - name: "Socialistisk Folkeparti"
+    description: "F: SF – Socialistisk Folkeparti"
     website: "https://www.sf.dk"
-    depth: 2
-    ignore_urls: []
+    ignore_urls:
+      - "http://**"
+      - "*/wp-content/*"
+      - "*/regionerne/*"
+      - "*/partiforeninger/*"
+      - "*/sf-furesoe**"
+      - "**page_id**"
+      - "**post_type**"
+      - "**english**"
+      - "**cookies**"
+      - "*/*bliv-**"
+      - "*/om-sf/*"
+      - "*/giv-**"
+      - "*/nyhedsbrev**"
+      - "*/presse**"
+      - "*/kontakt**"
     domains:
       - "sf.dk"
     pdf_patterns:
       - "*.pdf"
-    description: "Socialist People's Party"
 
   - name: "Venstre"
+    description: "V: Venstre, Danmarks Liberale Parti"
     website: "https://www.venstre.dk"
-    depth: 2
-    ignore_urls: []
+    ignore_urls:
+      - "*/_Resources/*"
+      - "*/arsberetninger/*"
+      - "*/skoleweb/*"
+      - "*/lanndsmoede/*"
+      - "*/venstres-historie/*"
+      - "*/taler/*"
+      - "**page=*"
+      - "*/donation"
+      - "*/taler"
+      - "*/seneste-nyheder"
+      - "*/folketingskandidater"
+      - "*/folketingsmedlemmer"
+      - "*/ordfoerere"
+      - "*/ministre"
+      - "*/europa-parlamentet"
+      - "*/kommuner"
+      - "*/regioner"
+      - "*/forretningsudvalg"
+      - "*/hovedbestyrelse"
+      - "*/din-lokale-formand"
+      - "*/venstre-medarbejdere"
+      - "*/den-bla-cafe"
+      - "*/om-venstre"
+      - "*/venstre-i-tal"
+      - "*/venstre-lokalt"
+      - "*/venstre-internationalt"
+      - "*/venstres-oekonomi"
+      - "*/venstres-historie"
+      - "*/venstres-logo"
+      - "*/arsberetninger"
+      - "*/skoleweb"
+      - "*/landsmoede"
+      - "*/folkemoede"
+      - "*/rejsetilbud"
+      - "*/vu"
     domains:
-      - "venstre.dk"
+      - "www.venstre.dk"
     pdf_patterns:
       - "program"
       - "manifest"
       - "*.pdf"
-    description: "Venstre – Denmark's Liberal Party"
 
-  - name: "Nye Borgerlige"
-    website: "https://nyeborgerlige.dk"
-    depth: 2
-    ignore_urls: []
+  - name: "Borgernes Parti"
+    website: "https://borgernesparti.dk"
+    ignore_urls:
+      - "*/author/andreashaladyn"
+      - "**post_type**"
+      - "*/page/*"
     domains:
-      - "nyeborgerlige.dk"
+      - "borgernesparti.dk"
     pdf_patterns:
       - "*.pdf"
-    description: "New Right – A liberal-conservative party"
+    description: "H: Borgernes Parti – Lars Boje Mathiesen"
 
   - name: "Dansk Folkeparti"
+    description: "O: Dansk Folkeparti"
     website: "https://www.danskfolkeparti.dk"
-    depth: 2
-    ignore_urls: []
-
+    ignore_urls:
+      - "*/privatpolitik"
+      - "*/lokalforeninger"
+      - "*/hovedbestyrelsen"
+      - "*/medarbejdere"
+      - "*/dansk-folkeblad"
+      - "*/presse"
+      - "*/privatlivspolitik"
+      - "*/patriots-for-europe"
+      - "*/cookiepolitik"
+      - "*/page/*"
+      - "*/lokalforeninger/*"
+      - "*/medie/*"
+      - "*/konkurrencebetingelser"
     domains:
       - "danskfolkeparti.dk"
     pdf_patterns:
       - "program"
       - "manifest"
       - "*.pdf"
-    description: "Danish People's Party"
+
+  - name: "Danmarks Demokraterne"
+    description: "Æ: Danmarksdemokraterne – Inger Støjberg"
+    website: "https://danmarksdemokraterne.dk"
+    ignore_urls:
+      - "*/forside/sample-page"
+      - "*/forside/byraadsmedlemmer**"
+      - "*/forside/regionsraadsmedlemmer"
+      - "*/forside/aktivitetsudvalg"
+      - "*/forside/presse"
+      - "*/forside/medarbejdere"
+      - "*/forside/ledige-job"
+      - "*/forside/tilmelding"
+      - "*/forside/logoer"
+      - "*/forside/pressefoto"
+      - "*/forside/vedtaegter"
+      - "*/forside/abonnementsbetingelser"
+      - "*/forside/cookiepolitik"
+      - "*/forside/landsmoede-2026"
+      - "*/wp-content/*"
+      - "**presse**"
+      - "**gmail.com**"
+      - "**outlook.dk**"
+      - "**.jpg"
+    domains:
+      - "danmarksdemokraterne.dk"
+    pdf_patterns:
+      - "program"
+      - "manifest"
+      - "*.pdf"
+
+  - name: "Liberal Alliance"
+    description: "I: Liberal Alliance"
+    website: "https://www.liberalalliance.dk/"
+    ignore_urls:
+      - "*/landsorganisation/*"
+    domains:
+      - "liberalalliance.dk"
+    pdf_patterns:
+      - "program"
+      - "manifest"
+      - "*.pdf"
 
 # Global crawling settings
 crawl_settings:
-  max_depth: 2
-  timeout_seconds: 30
-  respect_robots_txt: true
-  rate_limit_delay_seconds: 1
-  user_agent: "web-scraper-rag/0.1.0 (+https://github.com/example/web-scraper-rag)"
+  depth: 3
+  ignore_urls:
+    - "http://**"
+    - "mailto:**"
+    - "**facebook.com**"
+    - "**x.com**"
+    - "**gmail.com**"
+    - "**outlook.com**"
+    - "**cookie**"
+    - "*/presse**"
+    - "**.jpg"
+    - "**.jpeg"
+    - "**.png"
+    - "**.webp"
+    - "**english**"
+    - "*/bliv-**"
+    - "*/giv-**"
+    - "*/vaer-**"
+    - "*/mit-**"
+    - "*/betal-**"
+    - "*/medlemslogin"
+    - "*/kontakt"
+    - "*/stoet-os**"
+    - "*/login"
+    - "*/kontakt-os"
+    - "*/skolemateriale"
+    - "*/privatlivspolitik"
+    - "*/politikere/borgmestre/*"
+    - "*/politikere/byraadsmedlemmer/*"
+    - "*/politikere/regionsraadsmedlemmer/*"
+#  timeout_seconds: 30
+#  respect_robots_txt: true
+#  rate_limit_delay_seconds: 1
+#  user_agent: "web-scraper-rag/0.1.0 (+https://github.com/example/web-scraper-rag)"
 
 # Output settings
 output:
