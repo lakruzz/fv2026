@@ -1,8 +1,10 @@
 """Tests for CLI module."""
 
+from pathlib import Path
+
 import pytest
 
-from web_scraper_rag.cli import parse_arguments
+from web_scraper_rag.cli import merge_markdown_folder, parse_arguments
 
 
 class TestParseArguments:
@@ -11,6 +13,7 @@ class TestParseArguments:
     def test_single_site_crawl(self):
         """Test parsing single site crawl command."""
         args = parse_arguments(["--site", "alternativet", "--output-format", "markdown"])
+        assert args.command == "crawl"
         assert args.site == "alternativet"
         assert args.all is False
         assert args.output_format == "markdown"
@@ -18,6 +21,7 @@ class TestParseArguments:
     def test_all_sites_crawl(self):
         """Test parsing all sites crawl command."""
         args = parse_arguments(["--all", "--output-format", "markdown"])
+        assert args.command == "crawl"
         assert args.all is True
         assert args.site is None
         assert args.output_format == "markdown"
@@ -116,3 +120,60 @@ class TestParseArguments:
         assert args.output_format == "markdown"
         assert args.output_dir == "/out"
         assert args.config is None
+
+    def test_merge_subcommand_defaults(self):
+        """Test parsing merge subcommand with default output."""
+        args = parse_arguments(["merge", "output/done"])
+        assert args.command == "merge"
+        assert args.input_dir == "output/done"
+        assert args.output is None
+
+    def test_merge_subcommand_custom_output(self):
+        """Test parsing merge subcommand with custom output."""
+        args = parse_arguments(["merge", "output/done", "--output", "merged.md"])
+        assert args.command == "merge"
+        assert args.input_dir == "output/done"
+        assert args.output == "merged.md"
+
+
+class TestMergeMarkdownFolder:
+    """Test markdown folder merge functionality."""
+
+    def test_merge_markdown_folder_default_name(self, tmp_path: Path):
+        """Test default output path naming convention."""
+        input_dir = tmp_path / "done"
+        input_dir.mkdir()
+        (input_dir / "b.md").write_text("B", encoding="utf-8")
+        (input_dir / "a.md").write_text("A", encoding="utf-8")
+
+        output_path = merge_markdown_folder(str(input_dir), quiet=True)
+
+        assert output_path == tmp_path / "merge-done.md"
+        merged = output_path.read_text(encoding="utf-8")
+        assert "## Table of Contents" in merged
+        assert "- [a.md](#file-a)" in merged
+        assert "- [b.md](#file-b)" in merged
+        assert "## File: a" in merged
+        assert "## File: b" in merged
+        assert merged.find("## File: a") < merged.find("## File: b")
+
+    def test_merge_markdown_folder_custom_output(self, tmp_path: Path):
+        """Test explicit output path is respected."""
+        input_dir = tmp_path / "done"
+        input_dir.mkdir()
+        (input_dir / "one.md").write_text("First", encoding="utf-8")
+
+        custom_output = tmp_path / "custom" / "all.md"
+        output_path = merge_markdown_folder(str(input_dir), output=str(custom_output), quiet=True)
+
+        assert output_path == custom_output
+        assert custom_output.exists()
+
+    def test_merge_markdown_folder_requires_markdown_files(self, tmp_path: Path):
+        """Test folder without markdown files fails clearly."""
+        input_dir = tmp_path / "empty"
+        input_dir.mkdir()
+        (input_dir / "note.txt").write_text("not markdown", encoding="utf-8")
+
+        with pytest.raises(ValueError, match="No markdown files found"):
+            merge_markdown_folder(str(input_dir), quiet=True)
