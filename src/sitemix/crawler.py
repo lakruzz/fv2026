@@ -56,7 +56,7 @@ class WebCrawler:
         quiet: bool = False,
         verbose: bool = False,
         assisted_browser: bool = False,
-        browser_profile: str = ".web-scraber-rag/browser-profile",
+        browser_profile: str = ".sitemix/browser-profile",
     ):
         """Initialize the crawler.
 
@@ -719,7 +719,7 @@ def crawl_site(
     verbose: bool = False,
     config_file: str | None = None,
     assisted_browser: bool = False,
-    browser_profile: str = ".web-scraber-rag/browser-profile",
+    browser_profile: str = ".sitemix/browser-profile",
 ) -> None:
     """Crawl a single site.
 
@@ -896,7 +896,7 @@ def crawl_all_sites(
     verbose: bool = False,
     config_file: str | None = None,
     assisted_browser: bool = False,
-    browser_profile: str = ".web-scraber-rag/browser-profile",
+    browser_profile: str = ".sitemix/browser-profile",
 ) -> None:
     """Crawl all sites defined in configuration.
 

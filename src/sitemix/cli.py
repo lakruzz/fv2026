@@ -31,7 +31,7 @@ Examples:
         "--config",
         type=str,
         default=None,
-        help=("Path to configuration file (default: auto-discover in ./.web-scraber-rag)"),
+        help=("Path to configuration file (default: auto-discover in ./.sitemix)"),
     )
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument(
@@ -120,7 +120,7 @@ Examples:
     parser.add_argument(
         "--browser-profile",
         type=str,
-        default=".web-scraber-rag/browser-profile",
+        default=".sitemix/browser-profile",
         help="Persistent browser profile directory for assisted runs",
     )
     parser.set_defaults(command="crawl")

@@ -50,7 +50,7 @@ class TestLoadConfig:
 
     def test_auto_discover_prefers_sites_yml(self, temp_dir, monkeypatch):
         """Test discovery prefers sites.yml over other YAML files."""
-        config_dir = temp_dir / ".web-scraber-rag"
+        config_dir = temp_dir / ".sitemix"
         config_dir.mkdir()
         (config_dir / "aaa.yaml").write_text("sites: []")
         (config_dir / "sites.yml").write_text("sites: []")
@@ -62,7 +62,7 @@ class TestLoadConfig:
 
     def test_auto_discover_falls_back_to_first_alphanumeric(self, temp_dir, monkeypatch):
         """Test discovery falls back to first alphanumeric YAML filename."""
-        config_dir = temp_dir / ".web-scraber-rag"
+        config_dir = temp_dir / ".sitemix"
         config_dir.mkdir()
         (config_dir / "zebra.yaml").write_text("sites: []")
         (config_dir / "alpha.yml").write_text("sites: []")
@@ -72,7 +72,7 @@ class TestLoadConfig:
         assert discover_default_config_path() == (config_dir / "alpha.yml")
 
     def test_auto_discover_missing_directory(self, temp_dir, monkeypatch):
-        """Test discovery fails when .web-scraber-rag does not exist."""
+        """Test discovery fails when .sitemix does not exist."""
         monkeypatch.chdir(temp_dir)
 
         with pytest.raises(ConfigError, match="Configuration directory not found"):
@@ -80,7 +80,7 @@ class TestLoadConfig:
 
     def test_load_config_auto_discovery(self, temp_dir, monkeypatch):
         """Test load_config discovers default config when path is omitted."""
-        config_dir = temp_dir / ".web-scraber-rag"
+        config_dir = temp_dir / ".sitemix"
         config_dir.mkdir()
         config_file = config_dir / "sites.yaml"
         config_file.write_text(
