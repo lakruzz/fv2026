@@ -8,7 +8,7 @@ class TestWebCrawler:
 
     def test_crawler_initialization(self):
         """Test crawler can be initialized with required parameters."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://example.com",
@@ -26,7 +26,7 @@ class TestWebCrawler:
 
     def test_is_valid_url_respects_max_depth(self):
         """Test that URLs beyond max depth are rejected."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://example.com",
@@ -43,7 +43,7 @@ class TestWebCrawler:
 
     def test_is_valid_url_rejects_visited(self):
         """Test that already visited URLs are rejected."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
 
@@ -55,7 +55,7 @@ class TestWebCrawler:
 
     def test_is_valid_url_rejects_canonical_visited(self):
         """Test that canonical URL variants are treated as visited."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
         crawler.visited_urls.add("https://example.com/")
@@ -64,7 +64,7 @@ class TestWebCrawler:
 
     def test_is_valid_url_rejects_anchors(self):
         """Test that anchor links are rejected."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
 
@@ -73,7 +73,7 @@ class TestWebCrawler:
 
     def test_is_valid_url_rejects_ignored_patterns(self):
         """Test that configured ignored URL patterns are rejected."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://example.com",
@@ -87,7 +87,7 @@ class TestWebCrawler:
 
     def test_is_valid_url_rejects_ignored_glob_patterns(self):
         """Test that glob ignore patterns are applied to URL and path."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://www.alternativet.dk",
@@ -104,7 +104,7 @@ class TestWebCrawler:
 
     def test_is_valid_url_respects_domain_whitelist(self):
         """Test that only whitelisted domains are crawled."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://example.com",
@@ -119,7 +119,7 @@ class TestWebCrawler:
 
     def test_is_valid_url_literal_domain_does_not_match_arbitrary_subdomains(self):
         """Test literal domains match exact host and not unrelated subdomains."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://enhedslisten.dk",
@@ -133,7 +133,7 @@ class TestWebCrawler:
 
     def test_is_valid_url_glob_domain_matches_subdomains(self):
         """Test wildcard domains enable explicit subdomain matching."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://shop.enhedslisten.dk",
@@ -148,7 +148,7 @@ class TestWebCrawler:
         """Test link extraction from HTML."""
         from bs4 import BeautifulSoup
 
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
 
@@ -174,7 +174,7 @@ class TestWebCrawler:
         """Test content extraction from HTML."""
         from bs4 import BeautifulSoup
 
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
 
@@ -203,7 +203,7 @@ class TestWebCrawler:
 
     def test_is_pdf_url_detection(self):
         """Test PDF URL detection based on path suffix."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
 
@@ -213,7 +213,7 @@ class TestWebCrawler:
 
     def test_is_valid_url_rejects_known_binary_assets(self):
         """Test known non-PDF binary assets are skipped automatically."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
 
@@ -223,7 +223,7 @@ class TestWebCrawler:
 
     def test_process_page_pdf_uses_pdf_parser_when_enabled(self):
         """Test PDF URLs are parsed via PDF path when include_pdfs is enabled."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://example.com",
@@ -238,7 +238,7 @@ class TestWebCrawler:
 
     def test_process_page_pdf_skipped_when_disabled(self):
         """Test PDF URLs are skipped when include_pdfs is disabled."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://example.com",
@@ -251,7 +251,7 @@ class TestWebCrawler:
 
     def test_dryrun_logs_ignore_once(self, capsys):
         """Test dry-run logs ignored URLs once with visual marker."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://example.com",
@@ -278,7 +278,7 @@ class TestWebCrawler:
 
     def test_dryrun_hides_already_visited_when_not_verbose(self, capsys):
         """Test dry-run suppresses low-signal ignore reasons unless verbose."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://example.com",
@@ -298,7 +298,7 @@ class TestWebCrawler:
 
     def test_dryrun_shows_already_visited_when_verbose(self, capsys):
         """Test dry-run includes low-signal reasons when verbose is enabled."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://example.com",
@@ -319,7 +319,7 @@ class TestWebCrawler:
 
     def test_dryrun_suppresses_unsupported_scheme_even_verbose(self, capsys):
         """Test unsupported schemes (e.g., mailto:) are never shown in dry-run output."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://example.com",
@@ -339,7 +339,7 @@ class TestWebCrawler:
 
     def test_detects_cloudflare_challenge_and_reports_once(self, capsys):
         """Test that Cloudflare challenge pages are detected and reported once."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
         crawler = WebCrawler(
             start_url="https://example.com",
@@ -364,9 +364,9 @@ class TestWebCrawler:
 
     def test_has_graphical_display_false_without_env(self, monkeypatch):
         """Test display detection when no GUI environment variables are set."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
-        monkeypatch.setattr("web_scraper_rag.crawler.system", lambda: "Linux")
+        monkeypatch.setattr("sitemix.crawler.system", lambda: "Linux")
         monkeypatch.delenv("DISPLAY", raising=False)
         monkeypatch.delenv("WAYLAND_DISPLAY", raising=False)
 
@@ -375,9 +375,9 @@ class TestWebCrawler:
 
     def test_has_graphical_display_true_with_display_env(self, monkeypatch):
         """Test display detection when DISPLAY is set."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
-        monkeypatch.setattr("web_scraper_rag.crawler.system", lambda: "Linux")
+        monkeypatch.setattr("sitemix.crawler.system", lambda: "Linux")
         monkeypatch.setenv("DISPLAY", ":0")
 
         crawler = WebCrawler(start_url="https://example.com", allowed_domains=["example.com"])
@@ -385,9 +385,9 @@ class TestWebCrawler:
 
     def test_has_graphical_display_true_on_macos_without_display_env(self, monkeypatch):
         """Test display detection accepts macOS native GUI without DISPLAY vars."""
-        from web_scraper_rag.crawler import WebCrawler
+        from sitemix.crawler import WebCrawler
 
-        monkeypatch.setattr("web_scraper_rag.crawler.system", lambda: "Darwin")
+        monkeypatch.setattr("sitemix.crawler.system", lambda: "Darwin")
         monkeypatch.delenv("DISPLAY", raising=False)
         monkeypatch.delenv("WAYLAND_DISPLAY", raising=False)
 
@@ -395,12 +395,12 @@ class TestWebCrawler:
         assert crawler._has_graphical_display() is True
 
 
-class TestCrawlParty:
-    """Test the crawl_party function."""
+class TestCrawlSite:
+    """Test the crawl_site function."""
 
-    def test_crawl_party_creates_output_directory(self, tmp_path):
+    def test_crawl_site_creates_output_directory(self, tmp_path):
         """Test that output directory is created."""
-        from web_scraper_rag.crawler import crawl_party
+        from sitemix.crawler import crawl_site
 
         config = {
             "sites": [
@@ -417,13 +417,13 @@ class TestCrawlParty:
         output_dir = str(tmp_path / "output")
 
         # Mock the WebCrawler to avoid real network calls
-        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+        with patch("sitemix.crawler.WebCrawler") as mock_crawler_class:
             mock_crawler = MagicMock()
             mock_crawler.crawl.return_value = "# Test Content"
             mock_crawler_class.return_value = mock_crawler
 
-            crawl_party(
-                party_name="Test Party",
+            crawl_site(
+                site_name="Test Party",
                 config=config,
                 output_dir=output_dir,
                 output_format="markdown",
@@ -441,9 +441,9 @@ class TestCrawlParty:
             # Output file should be created
             assert (tmp_path / "output" / "test_party.md").exists()
 
-    def test_crawl_party_uses_global_depth_when_site_missing_depth(self, tmp_path):
+    def test_crawl_site_uses_global_depth_when_site_missing_depth(self, tmp_path):
         """Test global depth is used when site depth is not set."""
-        from web_scraper_rag.crawler import crawl_party
+        from sitemix.crawler import crawl_site
 
         config = {
             "sites": [
@@ -452,13 +452,13 @@ class TestCrawlParty:
             "crawl_settings": {"depth": 4, "ignore_urls": []},
         }
 
-        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+        with patch("sitemix.crawler.WebCrawler") as mock_crawler_class:
             mock_crawler = MagicMock()
             mock_crawler.crawl.return_value = "# Test Content"
             mock_crawler_class.return_value = mock_crawler
 
-            crawl_party(
-                party_name="Test Party",
+            crawl_site(
+                site_name="Test Party",
                 config=config,
                 output_dir=str(tmp_path / "output"),
                 output_format="markdown",
@@ -472,9 +472,9 @@ class TestCrawlParty:
 
             assert mock_crawler_class.call_args.kwargs["max_depth"] == 4
 
-    def test_crawl_party_site_depth_overrides_global_depth(self, tmp_path):
+    def test_crawl_site_site_depth_overrides_global_depth(self, tmp_path):
         """Test site depth overrides global depth."""
-        from web_scraper_rag.crawler import crawl_party
+        from sitemix.crawler import crawl_site
 
         config = {
             "sites": [
@@ -489,13 +489,13 @@ class TestCrawlParty:
             "crawl_settings": {"depth": 4, "ignore_urls": []},
         }
 
-        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+        with patch("sitemix.crawler.WebCrawler") as mock_crawler_class:
             mock_crawler = MagicMock()
             mock_crawler.crawl.return_value = "# Test Content"
             mock_crawler_class.return_value = mock_crawler
 
-            crawl_party(
-                party_name="Test Party",
+            crawl_site(
+                site_name="Test Party",
                 config=config,
                 output_dir=str(tmp_path / "output"),
                 output_format="markdown",
@@ -509,9 +509,9 @@ class TestCrawlParty:
 
             assert mock_crawler_class.call_args.kwargs["max_depth"] == 2
 
-    def test_crawl_party_merges_global_and_site_ignore_urls(self, tmp_path):
+    def test_crawl_site_merges_global_and_site_ignore_urls(self, tmp_path):
         """Test global ignore_urls are supplemented by site ignore_urls."""
-        from web_scraper_rag.crawler import crawl_party
+        from sitemix.crawler import crawl_site
 
         config = {
             "sites": [
@@ -526,13 +526,13 @@ class TestCrawlParty:
             "crawl_settings": {"depth": 4, "ignore_urls": ["*/global*", "*/shared*"]},
         }
 
-        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+        with patch("sitemix.crawler.WebCrawler") as mock_crawler_class:
             mock_crawler = MagicMock()
             mock_crawler.crawl.return_value = "# Test Content"
             mock_crawler_class.return_value = mock_crawler
 
-            crawl_party(
-                party_name="Test Party",
+            crawl_site(
+                site_name="Test Party",
                 config=config,
                 output_dir=str(tmp_path / "output"),
                 output_format="markdown",
@@ -550,9 +550,9 @@ class TestCrawlParty:
                 "*/site-only*",
             ]
 
-    def test_crawl_party_uses_global_include_pdfs_default(self, tmp_path):
+    def test_crawl_site_uses_global_include_pdfs_default(self, tmp_path):
         """Test global include_pdfs is used when CLI flag is omitted."""
-        from web_scraper_rag.crawler import crawl_party
+        from sitemix.crawler import crawl_site
 
         config = {
             "sites": [
@@ -567,13 +567,13 @@ class TestCrawlParty:
             "crawl_settings": {"depth": 3, "ignore_urls": [], "include_pdfs": True},
         }
 
-        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+        with patch("sitemix.crawler.WebCrawler") as mock_crawler_class:
             mock_crawler = MagicMock()
             mock_crawler.crawl.return_value = "# Test Content"
             mock_crawler_class.return_value = mock_crawler
 
-            crawl_party(
-                party_name="Test Party",
+            crawl_site(
+                site_name="Test Party",
                 config=config,
                 output_dir=str(tmp_path / "output"),
                 output_format="markdown",
@@ -587,9 +587,9 @@ class TestCrawlParty:
 
             assert mock_crawler_class.call_args.kwargs["include_pdfs"] is True
 
-    def test_crawl_party_site_include_pdfs_overrides_global(self, tmp_path):
+    def test_crawl_site_site_include_pdfs_overrides_global(self, tmp_path):
         """Test site include_pdfs overrides global include_pdfs."""
-        from web_scraper_rag.crawler import crawl_party
+        from sitemix.crawler import crawl_site
 
         config = {
             "sites": [
@@ -605,13 +605,13 @@ class TestCrawlParty:
             "crawl_settings": {"depth": 3, "ignore_urls": [], "include_pdfs": True},
         }
 
-        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+        with patch("sitemix.crawler.WebCrawler") as mock_crawler_class:
             mock_crawler = MagicMock()
             mock_crawler.crawl.return_value = "# Test Content"
             mock_crawler_class.return_value = mock_crawler
 
-            crawl_party(
-                party_name="Test Party",
+            crawl_site(
+                site_name="Test Party",
                 config=config,
                 output_dir=str(tmp_path / "output"),
                 output_format="markdown",
@@ -625,9 +625,9 @@ class TestCrawlParty:
 
             assert mock_crawler_class.call_args.kwargs["include_pdfs"] is False
 
-    def test_crawl_party_cli_include_pdfs_overrides_config(self, tmp_path):
+    def test_crawl_site_cli_include_pdfs_overrides_config(self, tmp_path):
         """Test CLI include_pdfs=True overrides site/global config defaults."""
-        from web_scraper_rag.crawler import crawl_party
+        from sitemix.crawler import crawl_site
 
         config = {
             "sites": [
@@ -643,13 +643,13 @@ class TestCrawlParty:
             "crawl_settings": {"depth": 3, "ignore_urls": [], "include_pdfs": False},
         }
 
-        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+        with patch("sitemix.crawler.WebCrawler") as mock_crawler_class:
             mock_crawler = MagicMock()
             mock_crawler.crawl.return_value = "# Test Content"
             mock_crawler_class.return_value = mock_crawler
 
-            crawl_party(
-                party_name="Test Party",
+            crawl_site(
+                site_name="Test Party",
                 config=config,
                 output_dir=str(tmp_path / "output"),
                 output_format="markdown",
@@ -664,22 +664,22 @@ class TestCrawlParty:
             assert mock_crawler_class.call_args.kwargs["include_pdfs"] is True
 
 
-class TestCrawlAllParties:
-    """Test the crawl_all_parties function."""
+class TestCrawlAllSites:
+    """Test the crawl_all_sites function."""
 
-    def test_crawl_all_parties_count(self, tmp_path, sample_config):
+    def test_crawl_all_sites_count(self, tmp_path, sample_config):
         """Test that all parties are crawled."""
-        from web_scraper_rag.crawler import crawl_all_parties
+        from sitemix.crawler import crawl_all_sites
 
         output_dir = str(tmp_path)
 
         # Mock the WebCrawler to avoid real network calls
-        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+        with patch("sitemix.crawler.WebCrawler") as mock_crawler_class:
             mock_crawler = MagicMock()
             mock_crawler.crawl.return_value = "# Test Content"
             mock_crawler_class.return_value = mock_crawler
 
-            crawl_all_parties(
+            crawl_all_sites(
                 config=sample_config,
                 output_dir=output_dir,
                 output_format="markdown",
@@ -696,7 +696,7 @@ class TestCrawlAllParties:
 
     def test_dry_run_does_not_write_output(self, tmp_path):
         """Test that dry-run mode does not create output files."""
-        from web_scraper_rag.crawler import crawl_party
+        from sitemix.crawler import crawl_site
 
         config = {
             "sites": [
@@ -712,13 +712,13 @@ class TestCrawlAllParties:
 
         output_dir = str(tmp_path / "output")
 
-        with patch("web_scraper_rag.crawler.WebCrawler") as mock_crawler_class:
+        with patch("sitemix.crawler.WebCrawler") as mock_crawler_class:
             mock_crawler = MagicMock()
             mock_crawler.crawl.return_value = "# Test Content"
             mock_crawler_class.return_value = mock_crawler
 
-            crawl_party(
-                party_name="Test Party",
+            crawl_site(
+                site_name="Test Party",
                 config=config,
                 output_dir=output_dir,
                 output_format="markdown",

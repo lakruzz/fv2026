@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from web_scraper_rag.cli import merge_markdown_folder, parse_arguments
+from sitemix.cli import merge_markdown_folder, parse_arguments
 
 
 class TestParseArguments:
@@ -79,10 +79,10 @@ class TestParseArguments:
                 "--site",
                 "alternativet",
                 "--browser-profile",
-                ".web-scraber-rag/custom-profile",
+                ".sitemix/custom-profile",
             ]
         )
-        assert args.browser_profile == ".web-scraber-rag/custom-profile"
+        assert args.browser_profile == ".sitemix/custom-profile"
 
     def test_mutually_exclusive_site_all(self):
         """Test that --site and --all are mutually exclusive."""
@@ -111,7 +111,7 @@ class TestParseArguments:
         assert args.dryrun is False
         assert args.depth is None
         assert args.assisted_browser is False
-        assert args.browser_profile == ".web-scraber-rag/browser-profile"
+        assert args.browser_profile == ".sitemix/browser-profile"
 
     def test_short_options(self):
         """Test short option aliases."""

@@ -19,19 +19,19 @@ def sample_config():
     return {
         "sites": [
             {
-                "name": "Alternativet",
-                "website": "https://www.alternativet.dk",
+                "name": "Example Site",
+                "website": "https://www.example.com",
                 "depth": 2,
                 "ignore_urls": [],
-                "domains": ["alternativet.dk"],
-                "pdf_patterns": ["manifest", "program", "*.pdf"],
+                "domains": ["example.com"],
+                "pdf_patterns": ["*.pdf"],
             },
             {
-                "name": "Enhedslisten",
-                "website": "https://www.enhedslisten.dk",
+                "name": "Another Site",
+                "website": "https://www.another-example.org",
                 "depth": 2,
                 "ignore_urls": [],
-                "domains": ["enhedslisten.dk"],
+                "domains": ["another-example.org"],
                 "pdf_patterns": ["*.pdf"],
             },
         ]

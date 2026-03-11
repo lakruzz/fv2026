@@ -2,14 +2,14 @@
 
 import pytest
 
-from web_scraper_rag.config import (
+from sitemix.config import (
     ConfigError,
     discover_default_config_path,
-    get_all_parties,
+    get_all_sites,
     get_global_crawl_defaults,
-    get_party_by_name,
+    get_site_by_name,
     load_config,
-    validate_party_config,
+    validate_site_config,
 )
 
 
@@ -50,7 +50,7 @@ class TestLoadConfig:
 
     def test_auto_discover_prefers_sites_yml(self, temp_dir, monkeypatch):
         """Test discovery prefers sites.yml over other YAML files."""
-        config_dir = temp_dir / ".web-scraber-rag"
+        config_dir = temp_dir / ".sitemix"
         config_dir.mkdir()
         (config_dir / "aaa.yaml").write_text("sites: []")
         (config_dir / "sites.yml").write_text("sites: []")
@@ -62,7 +62,7 @@ class TestLoadConfig:
 
     def test_auto_discover_falls_back_to_first_alphanumeric(self, temp_dir, monkeypatch):
         """Test discovery falls back to first alphanumeric YAML filename."""
-        config_dir = temp_dir / ".web-scraber-rag"
+        config_dir = temp_dir / ".sitemix"
         config_dir.mkdir()
         (config_dir / "zebra.yaml").write_text("sites: []")
         (config_dir / "alpha.yml").write_text("sites: []")
@@ -72,7 +72,7 @@ class TestLoadConfig:
         assert discover_default_config_path() == (config_dir / "alpha.yml")
 
     def test_auto_discover_missing_directory(self, temp_dir, monkeypatch):
-        """Test discovery fails when .web-scraber-rag does not exist."""
+        """Test discovery fails when .sitemix does not exist."""
         monkeypatch.chdir(temp_dir)
 
         with pytest.raises(ConfigError, match="Configuration directory not found"):
@@ -80,7 +80,7 @@ class TestLoadConfig:
 
     def test_load_config_auto_discovery(self, temp_dir, monkeypatch):
         """Test load_config discovers default config when path is omitted."""
-        config_dir = temp_dir / ".web-scraber-rag"
+        config_dir = temp_dir / ".sitemix"
         config_dir.mkdir()
         config_file = config_dir / "sites.yaml"
         config_file.write_text(
@@ -92,38 +92,38 @@ class TestLoadConfig:
         assert "sites" in config
 
 
-class TestValidatePartyConfig:
-    """Test party configuration validation."""
+class TestValidateSiteConfig:
+    """Test site configuration validation."""
 
-    def test_valid_party(self):
-        """Test validation of a valid party config."""
+    def test_valid_site(self):
+        """Test validation of a valid site config."""
         party = {
             "name": "Test Party",
             "website": "https://example.com",
             "depth": 2,
             "ignore_urls": [],
         }
-        validate_party_config(party)  # Should not raise
+        validate_site_config(party)  # Should not raise
 
-    def test_valid_party_without_depth_and_ignore_urls(self):
+    def test_valid_site_without_depth_and_ignore_urls(self):
         """Test validation allows site defaults to be provided globally."""
         party = {
             "name": "Test Party",
             "website": "https://example.com",
         }
-        validate_party_config(party)  # Should not raise
+        validate_site_config(party)  # Should not raise
 
     def test_missing_name(self):
-        """Test validation of party config missing name."""
+        """Test validation of site config missing name."""
         party = {"website": "https://example.com"}
         with pytest.raises(ConfigError, match="missing required field: name"):
-            validate_party_config(party)
+            validate_site_config(party)
 
     def test_missing_website(self):
-        """Test validation of party config missing website."""
+        """Test validation of site config missing website."""
         party = {"name": "Test Party"}
         with pytest.raises(ConfigError, match="missing required field: website"):
-            validate_party_config(party)
+            validate_site_config(party)
 
     def test_missing_depth(self):
         """Test missing depth is allowed (can come from global defaults)."""
@@ -132,7 +132,7 @@ class TestValidatePartyConfig:
             "website": "https://example.com",
             "ignore_urls": [],
         }
-        validate_party_config(party)  # Should not raise
+        validate_site_config(party)  # Should not raise
 
     def test_missing_ignore_urls(self):
         """Test missing ignore_urls is allowed (can come from global defaults)."""
@@ -141,10 +141,10 @@ class TestValidatePartyConfig:
             "website": "https://example.com",
             "depth": 2,
         }
-        validate_party_config(party)  # Should not raise
+        validate_site_config(party)  # Should not raise
 
     def test_invalid_depth_type(self):
-        """Test validation of party config with invalid depth type."""
+        """Test validation of site config with invalid depth type."""
         party = {
             "name": "Test Party",
             "website": "https://example.com",
@@ -152,10 +152,10 @@ class TestValidatePartyConfig:
             "ignore_urls": [],
         }
         with pytest.raises(ConfigError, match="field 'depth' must be"):
-            validate_party_config(party)
+            validate_site_config(party)
 
     def test_invalid_ignore_urls_type(self):
-        """Test validation of party config with invalid ignore_urls type."""
+        """Test validation of site config with invalid ignore_urls type."""
         party = {
             "name": "Test Party",
             "website": "https://example.com",
@@ -163,66 +163,66 @@ class TestValidatePartyConfig:
             "ignore_urls": "admin",
         }
         with pytest.raises(ConfigError, match="field 'ignore_urls' must be"):
-            validate_party_config(party)
+            validate_site_config(party)
 
     def test_invalid_include_pdfs_type(self):
-        """Test validation of party config with invalid include_pdfs type."""
+        """Test validation of site config with invalid include_pdfs type."""
         party = {
             "name": "Test Party",
             "website": "https://example.com",
             "include_pdfs": "yes",
         }
         with pytest.raises(ConfigError, match="field 'include_pdfs' must be"):
-            validate_party_config(party)
+            validate_site_config(party)
 
 
-class TestGetPartyByName:
-    """Test getting party by name."""
+class TestGetSiteByName:
+    """Test getting site by name."""
 
-    def test_get_existing_party(self, sample_config):
-        """Test getting an existing party."""
-        party = get_party_by_name(sample_config, "Alternativet")
-        assert party["name"] == "Alternativet"
-        assert party["website"] == "https://www.alternativet.dk"
+    def test_get_existing_site(self, sample_config):
+        """Test getting an existing site."""
+        site = get_site_by_name(sample_config, "Example Site")
+        assert site["name"] == "Example Site"
+        assert site["website"] == "https://www.example.com"
 
-    def test_get_party_case_insensitive(self, sample_config):
-        """Test case-insensitive party lookup."""
-        party = get_party_by_name(sample_config, "alternativet")
-        assert party["name"] == "Alternativet"
+    def test_get_site_case_insensitive(self, sample_config):
+        """Test case-insensitive site lookup."""
+        site = get_site_by_name(sample_config, "example site")
+        assert site["name"] == "Example Site"
 
-    def test_get_missing_party(self, sample_config):
-        """Test getting a non-existent party."""
+    def test_get_missing_site(self, sample_config):
+        """Test getting a non-existent site."""
         with pytest.raises(ConfigError, match="Site not found"):
-            get_party_by_name(sample_config, "NonExistent")
+            get_site_by_name(sample_config, "NonExistent")
 
     def test_no_parties_section(self):
         """Test error when config has no sites section."""
         config = {}
         with pytest.raises(ConfigError, match="no 'sites' section"):
-            get_party_by_name(config, "Test")
+            get_site_by_name(config, "Test")
 
 
-class TestGetAllParties:
-    """Test getting all parties."""
+class TestGetAllSites:
+    """Test getting all sites."""
 
-    def test_get_all_parties(self, sample_config):
-        """Test getting all parties from config."""
-        parties = get_all_parties(sample_config)
-        assert len(parties) == 2
-        assert parties[0]["name"] == "Alternativet"
-        assert parties[1]["name"] == "Enhedslisten"
+    def test_get_all_sites(self, sample_config):
+        """Test getting all sites from config."""
+        sites = get_all_sites(sample_config)
+        assert len(sites) == 2
+        assert sites[0]["name"] == "Example Site"
+        assert sites[1]["name"] == "Another Site"
 
     def test_no_parties_section(self):
         """Test error when config has no sites section."""
         config = {}
         with pytest.raises(ConfigError, match="no 'sites' section"):
-            get_all_parties(config)
+            get_all_sites(config)
 
     def test_invalid_parties_format(self):
         """Test error when sites is not a list."""
         config = {"sites": "not a list"}
         with pytest.raises(ConfigError, match="must be a list"):
-            get_all_parties(config)
+            get_all_sites(config)
 
 
 class TestGlobalCrawlDefaults:

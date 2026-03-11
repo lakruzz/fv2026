@@ -14,10 +14,10 @@ fv2026/
 │   └── .gh_alias.yml (GitHub CLI aliases)
 ├── .github/
 │   ├── instructions/
-│   │   └── web-scraper-rag-tool.instructions.md (project specs)
+│   │   └── sitemix-tool.instructions.md (project specs)
 │   └── copilot-instructions.md (this file)
 ├── src/
-│   └── web_scraper_rag/
+│   └── sitemix/
 │       ├── __init__.py
 │       ├── __main__.py (entry point for python -m)
 │       ├── cli.py (CLI with argparse)
@@ -42,7 +42,7 @@ fv2026/
 
 - **Install:** `uv sync` (syncs environment from pyproject.toml)
 - **Add dependencies:** `uv add package-name` (adds to pyproject.toml)
-- **Run scripts:** `uv run python -m web_scraper_rag --help`
+- **Run scripts:** `uv run python -m sitemix --help`
 - The devcontainer automatically runs `uv sync --all-extras` on creation
 
 ### Testing: `pytest`
@@ -67,19 +67,19 @@ The CLI uses **argparse** (no positional arguments) with a clean, documented int
 
 ```bash
 # Single party crawl (Markdown only)
-python -m web_scraper_rag --party alternativet --output-format markdown
+python -m sitemix --site "my blog" --output-format markdown
 
 # All parties (Markdown)
-python -m web_scraper_rag --all --output-format markdown
+python -m sitemix --all --output-format markdown
 
 # Single party with PDFs
-python -m web_scraper_rag --party alternativet --include-pdfs
+python -m sitemix --site "my blog" --include-pdfs
 
 # All parties with custom config
-python -m web_scraper_rag --config custom-config.yaml --all --include-pdfs
+python -m sitemix --config custom-config.yaml --all --include-pdfs
 
 # Using installed entry point
-web-scraper-rag --all --verbose
+sitemix --all --verbose
 ```
 
 ### Key CLI Arguments
@@ -167,7 +167,7 @@ def test_my_feature(self, sample_config, temp_dir):
 
 ### Daily Development
 
-1. Make changes to code in `src/web_scraper_rag/`
+1. Make changes to code in `src/sitemix/`
 2. Run tests: `pytest` or `uv run pytest`
 3. Check linting: `ruff check --fix`
 4. Format: `ruff format`
@@ -219,7 +219,7 @@ uv run pytest
 
 ```bash
 # Run the main script with help
-uv run python -m web_scraper_rag --help
+uv run python -m sitemix --help
 
 # Development: watch tests
 uv run pytest --watch

@@ -56,7 +56,7 @@ class WebCrawler:
         quiet: bool = False,
         verbose: bool = False,
         assisted_browser: bool = False,
-        browser_profile: str = ".web-scraber-rag/browser-profile",
+        browser_profile: str = ".sitemix/browser-profile",
     ):
         """Initialize the crawler.
 
@@ -384,7 +384,7 @@ class WebCrawler:
             request = Request(  # noqa: S310 - URL scheme is constrained by crawler domain filtering.
                 url,
                 headers={
-                    "User-Agent": "Mozilla/5.0 (compatible; web-scraper-rag/0.1.0)",
+                    "User-Agent": "Mozilla/5.0 (compatible; sitemix/0.1.0)",
                 },
             )
             with urlopen(request) as response:  # noqa: S310 - URL is user-config driven crawl target.
@@ -706,8 +706,8 @@ class WebCrawler:
         return final_markdown
 
 
-def crawl_party(
-    party_name: str,
+def crawl_site(
+    site_name: str,
     config: dict[str, Any],
     output_dir: str,
     output_format: str,
@@ -719,18 +719,18 @@ def crawl_party(
     verbose: bool = False,
     config_file: str | None = None,
     assisted_browser: bool = False,
-    browser_profile: str = ".web-scraber-rag/browser-profile",
+    browser_profile: str = ".sitemix/browser-profile",
 ) -> None:
-    """Crawl a single party website.
+    """Crawl a single site.
 
     Args:
-        party_name: Name of the party to crawl
+        site_name: Name of the site to crawl
         config: Configuration dictionary
         output_dir: Output directory for generated files
         output_format: Output format (markdown, html, text)
         include_pdfs: Whether to include PDF crawling
         follow_links: Whether to follow links within domain
-        depth: Maximum crawl depth cap; if None, use per-party config depth
+        depth: Maximum crawl depth cap; if None, use per-site config depth
         dry_run: Discover crawl/ignore decisions without collecting data
         quiet: Reduce output to minimum
         verbose: Enable verbose logging
@@ -738,15 +738,15 @@ def crawl_party(
         assisted_browser: Use interactive headed browser before crawl
         browser_profile: Persistent browser profile directory
     """
-    from web_scraper_rag.config import get_site_by_name
+    from sitemix.config import get_site_by_name
 
-    party = get_site_by_name(config, party_name)
+    site = get_site_by_name(config, site_name)
     effective_depth, merged_ignore_urls, effective_include_pdfs = _resolve_site_depth_and_ignores(
-        config, party, depth, include_pdfs
+        config, site, depth, include_pdfs
     )
 
     _log_crawl_start(
-        party=party,
+        site=site,
         output_format=output_format,
         dry_run=dry_run,
         include_pdfs=include_pdfs,
@@ -754,7 +754,7 @@ def crawl_party(
         verbose=verbose,
     )
 
-    output_file = _prepare_output_file(output_dir, party["name"])
+    output_file = _prepare_output_file(output_dir, site["name"])
     _print_run_header(
         quiet=quiet,
         config_file=config_file,
@@ -765,8 +765,8 @@ def crawl_party(
 
     # Create crawler
     crawler = WebCrawler(
-        start_url=party["website"],
-        allowed_domains=party.get("domains", []),
+        start_url=site["website"],
+        allowed_domains=site.get("domains", []),
         max_depth=effective_depth,
         ignore_urls=merged_ignore_urls,
         follow_links=follow_links,
@@ -799,7 +799,7 @@ def _resolve_site_depth_and_ignores(
     cli_include_pdfs: bool | None,
 ) -> tuple[int, list[str], bool]:
     """Resolve effective depth and merged ignore patterns for a site crawl."""
-    from web_scraper_rag.config import get_global_crawl_defaults
+    from sitemix.config import get_global_crawl_defaults
 
     global_depth, global_ignore_urls, global_include_pdfs = get_global_crawl_defaults(config)
 
@@ -829,7 +829,7 @@ def _resolve_site_depth_and_ignores(
 
 
 def _log_crawl_start(
-    party: dict[str, Any],
+    site: dict[str, Any],
     output_format: str,
     dry_run: bool,
     include_pdfs: bool | None,
@@ -840,8 +840,8 @@ def _log_crawl_start(
     if not verbose:
         return
 
-    print(f"Crawling party: {party['name']}", file=sys.stderr)
-    print(f"  Website: {party['website']}", file=sys.stderr)
+    print(f"Crawling site: {site['name']}", file=sys.stderr)
+    print(f"  Website: {site['website']}", file=sys.stderr)
     print(f"  Format: {output_format}", file=sys.stderr)
     if dry_run:
         print("  Dry run mode enabled", file=sys.stderr)
@@ -851,11 +851,11 @@ def _log_crawl_start(
         print("  Including PDFs", file=sys.stderr)
 
 
-def _prepare_output_file(output_dir: str, party_name: str) -> Path:
+def _prepare_output_file(output_dir: str, site_name: str) -> Path:
     """Create output directory and return target markdown file path."""
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
-    return output_path / f"{party_name.lower().replace(' ', '_')}.md"
+    return output_path / f"{site_name.lower().replace(' ', '_')}.md"
 
 
 def _print_run_header(
@@ -884,7 +884,7 @@ def _handle_dry_run_completion(quiet: bool, verbose: bool) -> None:
         print("Dry run complete. No output file written.", file=sys.stderr)
 
 
-def crawl_all_parties(
+def crawl_all_sites(
     config: dict[str, Any],
     output_dir: str,
     output_format: str,
@@ -896,9 +896,9 @@ def crawl_all_parties(
     verbose: bool = False,
     config_file: str | None = None,
     assisted_browser: bool = False,
-    browser_profile: str = ".web-scraber-rag/browser-profile",
+    browser_profile: str = ".sitemix/browser-profile",
 ) -> None:
-    """Crawl all parties defined in configuration.
+    """Crawl all sites defined in configuration.
 
     Args:
         config: Configuration dictionary
@@ -906,7 +906,7 @@ def crawl_all_parties(
         output_format: Output format (markdown, html, text)
         include_pdfs: Whether to include PDF crawling
         follow_links: Whether to follow links within domain
-        depth: Maximum crawl depth cap; if None, use per-party config depth
+        depth: Maximum crawl depth cap; if None, use per-site config depth
         dry_run: Discover crawl/ignore decisions without collecting data
         quiet: Reduce output to minimum
         verbose: Enable verbose logging
@@ -914,16 +914,16 @@ def crawl_all_parties(
         assisted_browser: Use interactive headed browser before crawl
         browser_profile: Persistent browser profile directory
     """
-    from web_scraper_rag.config import get_all_sites
+    from sitemix.config import get_all_sites
 
-    parties = get_all_sites(config)
+    sites = get_all_sites(config)
 
     if verbose:
-        print(f"Crawling {len(parties)} parties...", file=sys.stderr)
+        print(f"Crawling {len(sites)} sites...", file=sys.stderr)
 
-    for party in parties:
-        crawl_party(
-            party_name=party["name"],
+    for site in sites:
+        crawl_site(
+            site_name=site["name"],
             config=config,
             output_dir=output_dir,
             output_format=output_format,

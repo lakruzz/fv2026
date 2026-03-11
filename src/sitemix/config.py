@@ -12,18 +12,18 @@ class ConfigError(Exception):
 
 
 def discover_default_config_path(base_dir: Path | None = None) -> Path:
-    """Discover the default config file in .web-scraber-rag.
+    """Discover the default config file in .sitemix.
 
     Resolution order:
-    1. ./.web-scraber-rag/sites.yml
-    2. ./.web-scraber-rag/sites.yaml
-    3. first alphanumeric match of ./.web-scraber-rag/*.yml and *.yaml
+    1. ./.sitemix/sites.yml
+    2. ./.sitemix/sites.yaml
+    3. first alphanumeric match of ./.sitemix/*.yml and *.yaml
     """
     root = base_dir or Path.cwd()
-    config_dir = root / ".web-scraber-rag"
+    config_dir = root / ".sitemix"
 
     if not config_dir.exists() or not config_dir.is_dir():
-        raise ConfigError("Configuration directory not found: .web-scraber-rag")
+        raise ConfigError("Configuration directory not found: .sitemix")
 
     preferred_candidates = [config_dir / "sites.yml", config_dir / "sites.yaml"]
     for candidate in preferred_candidates:
@@ -43,7 +43,7 @@ def discover_default_config_path(base_dir: Path | None = None) -> Path:
     if wildcard_candidates:
         return wildcard_candidates[0]
 
-    raise ConfigError("No YAML config file found in .web-scraber-rag")
+    raise ConfigError("No YAML config file found in .sitemix")
 
 
 def load_config(config_path: str | None = None, verbose: bool = False) -> dict[str, Any]:
@@ -51,7 +51,7 @@ def load_config(config_path: str | None = None, verbose: bool = False) -> dict[s
 
     Args:
         config_path: Path to the configuration file. If omitted, discover a
-            default file in ./.web-scraber-rag
+            default file in ./.sitemix
         verbose: Enable verbose logging
 
     Returns:
@@ -186,18 +186,3 @@ def get_all_sites(config: dict[str, Any]) -> list[dict[str, Any]]:
         validate_site_config(site)
 
     return sites
-
-
-def validate_party_config(party: dict[str, Any]) -> None:
-    """Backward-compatible alias for validate_site_config."""
-    validate_site_config(party)
-
-
-def get_party_by_name(config: dict[str, Any], party_name: str) -> dict[str, Any]:
-    """Backward-compatible alias for get_site_by_name."""
-    return get_site_by_name(config, party_name)
-
-
-def get_all_parties(config: dict[str, Any]) -> list[dict[str, Any]]:
-    """Backward-compatible alias for get_all_sites."""
-    return get_all_sites(config)

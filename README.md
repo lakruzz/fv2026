@@ -1,12 +1,12 @@
-# fv2026 - Danish Election RAG Gem
+# sitemix
 
-Web scraper tool for creating RAG (Retrieval-Augmented Generation) files from Danish political party websites for use with Gemini Gem.
+Given a website location, sitemix scrapes content from HTML and PDF and creates a compact Markdown file — with the specific purpose of serving as RAG input or a source for LLM chat.
+
+> A pendant to [repomix](https://github.com/yamadashy/repomix): what repomix does for code repositories, sitemix does for websites.
 
 ## Overview
 
-This project crawls Danish political party websites and consolidates their programs, manifestos, and policy documents into optimized formats for RAG systems. Users can then upload these files to a Gemini Gem to enable semantic search and retrieval of party policy information.
-
-**Goal:** Help Danish voters understand which political party's platform aligns best with their values by enabling conversational AI to retrieve and match party positions on key issues.
+Sitemix crawls websites and consolidates their content into optimised Markdown files for RAG systems and LLM chat. Configure one or more sites in a simple YAML file, then run a single command to produce clean, structured Markdown output.
 
 ## Quick Start
 
@@ -29,28 +29,27 @@ pip install -e ".[dev]"
 
 ```bash
 # Show help
-python -m web_scraper_rag --help
+python -m sitemix --help
 
-# Crawl a single party
-python -m web_scraper_rag --party alternativet --output-format markdown
+# Crawl a single site
+python -m sitemix --site "my blog" --output-format markdown
 
-# Crawl all parties
-python -m web_scraper_rag --all --output-format markdown
+# Crawl all configured sites
+python -m sitemix --all --output-format markdown
 
 # Crawl with PDF merging
-python -m web_scraper_rag --all --include-pdfs
+python -m sitemix --all --include-pdfs
 ```
 
 ## Features
 
-- **Domain-specific crawling** — Follows links only within party domain
-- **Markdown output** — Optimized format for RAG systems
-- **PDF merging** — Consolidates multiple PDFs per party into single documents
-- **Configurable** — YAML-based party definitions with custom patterns
+- **Domain-specific crawling** — Follows links only within the configured domain
+- **Markdown output** — Optimised format for RAG systems
+- **PDF merging** — Consolidates multiple PDFs per site into single documents
+- **Configurable** — YAML-based site definitions
 - **Flexible CLI** — Named arguments (no positional args) for intuitive usage
-- **Depth control** — Crawl just homepage (depth 0) to multiple levels (depth 2+)
+- **Depth control** — Crawl just the homepage (depth 0) to multiple levels (depth 2+)
 - **Error resilience** — Gracefully handles network errors and continues crawling
-- **Verbose by default** — Detailed crawl output is shown unless `--quiet` is used
 - **Dry run mode** — Discover URLs and ignore decisions without collecting content
 
 ## Crawler Usage Examples
@@ -62,19 +61,19 @@ The `--depth` parameter controls how many levels of links to follow:
 - **Depth 0** — Only homepage (~5s, 7 KB)
 
   ```bash
-  python -m web_scraper_rag --party alternativet --depth 0
+  python -m sitemix --site "my blog" --depth 0
   ```
 
 - **Depth 1** — Homepage + all linked pages (~30-45s, 100-500 KB) — **Recommended**
 
   ```bash
-  python -m web_scraper_rag --party alternativet --depth 1
+  python -m sitemix --site "my blog" --depth 1
   ```
 
 - **Depth 2** — Three levels deep (~2-3 min, 2-5 MB)
 
   ```bash
-  python -m web_scraper_rag --party alternativet --depth 2
+  python -m sitemix --site "my blog" --depth 2
   ```
 
 ### Common Usage Patterns
@@ -82,151 +81,67 @@ The `--depth` parameter controls how many levels of links to follow:
 **Quick validation (just get a feel for the output):**
 
 ```bash
-python -m web_scraper_rag --party alternativet --depth 0
+python -m sitemix --site "my blog" --depth 0
 ```
 
-**Full party overview (most common):**
+**Full site overview (most common):**
 
 ```bash
-python -m web_scraper_rag --party alternativet --depth 1
+python -m sitemix --site "my blog" --depth 1
 ```
 
-**Comprehensive crawl (all party info):**
+**Comprehensive crawl:**
 
 ```bash
-python -m web_scraper_rag --party alternativet --depth 2
+python -m sitemix --site "my blog" --depth 2
 ```
 
-**Crawl all parties:**
+**Crawl all configured sites:**
 
 ```bash
-python -m web_scraper_rag --all --depth 1
+python -m sitemix --all --depth 1
 ```
 
 **Disable link following (homepage only, same as depth 0):**
 
 ```bash
-python -m web_scraper_rag --party alternativet --no-follow-links
+python -m sitemix --site "my blog" --no-follow-links
 ```
 
 **Custom output location:**
 
 ```bash
-python -m web_scraper_rag --party alternativet --output-dir my_data/ --depth 1
+python -m sitemix --site "my blog" --output-dir my_data/ --depth 1
 ```
 
 **Quiet mode:**
 
 ```bash
-python -m web_scraper_rag --party alternativet --depth 1 --quiet
+python -m sitemix --site "my blog" --depth 1 --quiet
 ```
 
 **Dry run (discover pages and ignore decisions only):**
 
 ```bash
-python -m web_scraper_rag --party alternativet --depth 2 --dryrun
-```
-
-Output shows:
-
-- Configuration loaded
-- Party being crawled
-- Each page being processed with depth level
-- Each URL ignored by an ignore pattern, including the matching pattern
-- Total pages crawled
-- Final output file location
-- **Depth control** — Crawl just homepage (depth 0) to multiple levels (depth 2+)
-- **Error resilience** — Gracefully handles network errors and continues crawling
-- **Verbose logging** — Optional stderr output for debugging
-
-## Crawler Usage Examples
-
-### Depth Parameter Explained
-
-The `--depth` parameter controls how many levels of links to follow:
-
-- **Depth 0** — Only homepage (~5s, 7 KB)
-
-  ```bash
-  python -m web_scraper_rag --party alternativet --depth 0
-  ```
-
-- **Depth 1** — Homepage + all linked pages (~30-45s, 100-500 KB) — **Recommended**
-
-  ```bash
-  python -m web_scraper_rag --party alternativet --depth 1
-  ```
-
-- **Depth 2** — Three levels deep (~2-3 min, 2-5 MB)
-
-  ```bash
-  python -m web_scraper_rag --party alternativet --depth 2
-  ```
-
-### Common Usage Patterns
-
-**Quick validation (just get a feel for the output):**
-
-```bash
-python -m web_scraper_rag --party alternativet --depth 0 --verbose
-```
-
-**Full party overview (most common):**
-
-```bash
-python -m web_scraper_rag --party alternativet --depth 1 --verbose
-```
-
-**Comprehensive crawl (all party info):**
-
-```bash
-python -m web_scraper_rag --party alternativet --depth 2 --verbose
-```
-
-**Crawl all parties:**
-
-```bash
-python -m web_scraper_rag --all --depth 1
-```
-
-**Disable link following (homepage only, same as depth 0):**
-
-```bash
-python -m web_scraper_rag --party alternativet --no-follow-links
-```
-
-**Custom output location:**
-
-```bash
-python -m web_scraper_rag --party alternativet --output-dir my_data/ --depth 1
+python -m sitemix --site "my blog" --depth 2 --dryrun
 ```
 
 **Verbose output for debugging:**
 
 ```bash
-python -m web_scraper_rag --party alternativet --depth 1 --verbose
+python -m sitemix --site "my blog" --depth 1 --verbose
 ```
-
-Output shows:
-
-- Configuration loaded
-- Party being crawled
-- Each page being processed with depth level
-- Total pages crawled
-- Final output file location
 
 ## Project Structure
 
 ```txt
-fv2026/
-├── src/web_scraper_rag/     # Main application code
+sitemix/
+├── src/sitemix/             # Main application code
 │   ├── cli.py               # CLI argument parsing
 │   ├── config.py            # Configuration loading
 │   ├── crawler.py           # Crawling logic
 │   └── __main__.py          # Entry point
-├── tests/                    # Test suite
-├── config/
-│   └── parties.yaml         # Party configurations
+├── tests/                   # Test suite
 ├── output/                  # Generated files (gitignored)
 ├── pyproject.toml           # Project metadata & dependencies
 └── README.md
@@ -268,71 +183,45 @@ uv add package-name
 
 # Add dev-only dependency
 uv add --group dev package-name
-
-# Add optional extra (e.g., Firecrawl)
-uv add --optional firecrawl firecrawl-py
 ```
 
 ## Configuration
 
-Site definitions are discovered from `./.web-scraber-rag/` in this order:
+Site definitions are discovered from `./.sitemix/` in this order:
 
-1. `./.web-scraber-rag/sites.yml`
-2. `./.web-scraber-rag/sites.yaml`
-3. First alphanumeric `./.web-scraber-rag/*.yml` or `./.web-scraber-rag/*.yaml`
+1. `./.sitemix/sites.yml`
+2. `./.sitemix/sites.yaml`
+3. First alphanumeric `./.sitemix/*.yml` or `./.sitemix/*.yaml`
 
 Example config:
 
 ```yaml
 sites:
-  - name: "Alternativet"
-    website: "https://www.alternativet.dk"
-    domains: ["alternativet.dk"]
-    pdf_patterns: ["manifest", "program", "*.pdf"]
-    description: "The Alternative – An idealistic political party"
+  - name: "My Blog"
+    website: "https://www.example.com"
+    domains: ["example.com"]
+    depth: 2
+    ignore_urls: []
+    pdf_patterns: ["*.pdf"]
+    description: "My personal blog"
 ```
 
 Custom config files can be specified with `--config path/to/config.yaml`.
 
 ## CLI Options
 
-| Option                   | Short | Description              | Default                                |
-| ------------------------ | ----- | ------------------------ | -------------------------------------- |
-| `--party NAME`           | `-p`  | Crawl specific party     | -                                      |
-| `--all`                  | `-a`  | Crawl all parties        | -                                      |
-| `--config PATH`          | `-c`  | Config file path         | Auto-discover in `./.web-scraber-rag/` |
-| `--output-dir PATH`      | `-o`  | Output directory         | `output/`                              |
-| `--output-format FORMAT` | `-f`  | `markdown`/`html`/`text` | `markdown`                             |
-| `--include-pdfs`         | -     | Include PDF crawling     | `false`                                |
-| `--no-follow-links`      | -     | Only crawl initial URL   | `false`                                |
-| `--depth N`              | -     | Max crawl depth          | `2`                                    |
-| `--verbose`              | `-v`  | Verbose logging          | `false`                                |
-| `--version`              | -     | Show version             | -                                      |
-
-## Implementation Status
-
-### Phase 1: Single Party Markdown ✅ **COMPLETE**
-
-- [x] Project structure setup
-- [x] CLI with argparse
-- [x] Config loading & validation
-- [x] Test infrastructure (35 tests passing)
-- [x] Crawler implementation (Playwright + BeautifulSoup)
-- [x] HTML parsing and content extraction
-- [x] Markdown consolidation
-- [x] Error handling and resilience
-
-**Status:** Working and tested. Crawls party websites successfully, captures content intelligently, handles errors gracefully.
-
-### Phase 2: All Parties Markdown
-
-- [x] `--all` flag implementation
-- [x] Batch crawling logic
-
-### Phase 3-5: PDF Handling
-
-- [ ] PDF discovery & download
-- [ ] PDF merging
+| Option                   | Short | Description              | Default                        |
+| ------------------------ | ----- | ------------------------ | ------------------------------ |
+| `--site NAME`            | `-s`  | Crawl specific site      | -                              |
+| `--all`                  | `-a`  | Crawl all sites          | -                              |
+| `--config PATH`          | `-c`  | Config file path         | Auto-discover in `./.sitemix/` |
+| `--output-dir PATH`      | `-o`  | Output directory         | `output/`                      |
+| `--output-format FORMAT` | `-f`  | `markdown`/`html`/`text` | `markdown`                     |
+| `--include-pdfs`         | -     | Include PDF crawling     | `false`                        |
+| `--no-follow-links`      | -     | Only crawl initial URL   | `false`                        |
+| `--depth N`              | -     | Max crawl depth          | `2`                            |
+| `--verbose`              | `-v`  | Verbose logging          | `false`                        |
+| `--version`              | -     | Show version             | -                              |
 
 ## Contributing
 
