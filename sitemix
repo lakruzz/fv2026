@@ -11,4 +11,4 @@ command -v "$PYTHON" >/dev/null \
 # Ensure this checkout wins on the import path
 export PYTHONPATH="$SCRIPT_DIR${PYTHONPATH:+:$PYTHONPATH}"
 
-exec "$PYTHON" -m web_scraper_rag "$@"
+exec "$PYTHON" -m sitemix "$@"
