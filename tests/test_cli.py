@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from web_scraper_rag.cli import merge_markdown_folder, parse_arguments
+from sitemix.cli import merge_markdown_folder, parse_arguments
 
 
 class TestParseArguments:

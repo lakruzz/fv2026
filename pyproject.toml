@@ -3,11 +3,11 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "web-scraper-rag"
+name = "sitemix"
 version = "0.1.0"
-description = "Web scraper for converting party websites into RAG files for Gemini Gem"
+description = "Given a website location, scrape content from HTML and PDF and create a compact Markdown file for RAG or LLM chat"
 requires-python = ">=3.11"
-authors = [{ name = "Web Scraper RAG Contributors" }]
+authors = [{ name = "Sitemix Contributors" }]
 license = "MIT"
 readme = "README.md"
 keywords = ["web-scraper", "rag", "gemini", "markdown"]
@@ -44,7 +44,7 @@ firecrawl = ["firecrawl-py>=0.1.0"]
 pdf = ["pypdf>=4.0.0"]
 
 [project.scripts]
-web-scraper-rag = "web_scraper_rag.cli:main"
+sitemix = "sitemix.cli:main"
 
 [dependency-groups]
 dev = [
@@ -126,7 +126,7 @@ ignore = [
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra --strict-markers --cov=src/web_scraper_rag --cov-report=term-missing --cov-report=html"
+addopts = "-ra --strict-markers --cov=src/sitemix --cov-report=term-missing --cov-report=html"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
@@ -134,7 +134,7 @@ python_functions = ["test_*"]
 
 [tool.coverage.run]
 branch = true
-source = ["src/web_scraper_rag"]
+source = ["src/sitemix"]
 omit = ["*/tests/*", "*/test_*.py"]
 
 [tool.coverage.report]

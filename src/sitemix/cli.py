@@ -4,15 +4,15 @@ import argparse
 import sys
 from pathlib import Path
 
-from web_scraper_rag import __version__
-from web_scraper_rag.config import discover_default_config_path, load_config
-from web_scraper_rag.crawler import crawl_all_parties, crawl_party
+from sitemix import __version__
+from sitemix.config import discover_default_config_path, load_config
+from sitemix.crawler import crawl_all_sites, crawl_site
 
 
 def _build_crawl_parser() -> argparse.ArgumentParser:
     """Build parser for crawl mode."""
     parser = argparse.ArgumentParser(
-        prog="web-scraper-rag",
+        prog="sitemix",
         description="Web scraper for converting website content into RAG files",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
@@ -66,7 +66,7 @@ Examples:
         "-a",
         "--all",
         action="store_true",
-        help="Crawl all parties defined in config",
+        help="Crawl all sites defined in config",
     )
 
     # Output options
@@ -130,7 +130,7 @@ Examples:
 def _build_merge_parser() -> argparse.ArgumentParser:
     """Build parser for markdown merge mode."""
     parser = argparse.ArgumentParser(
-        prog="web-scraper-rag merge",
+        prog="sitemix merge",
         description="Merge markdown files from a folder into one output file",
     )
     parser.add_argument(
@@ -265,8 +265,8 @@ def main(args: list[str] | None = None) -> int:
 
         # Execute appropriate action
         if parsed_args.site:
-            crawl_party(
-                party_name=parsed_args.site,
+            crawl_site(
+                site_name=parsed_args.site,
                 config=config,
                 output_dir=parsed_args.output_dir,
                 output_format=parsed_args.output_format,
@@ -281,7 +281,7 @@ def main(args: list[str] | None = None) -> int:
                 browser_profile=parsed_args.browser_profile,
             )
         elif parsed_args.all:
-            crawl_all_parties(
+            crawl_all_sites(
                 config=config,
                 output_dir=parsed_args.output_dir,
                 output_format=parsed_args.output_format,

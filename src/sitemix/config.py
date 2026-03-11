@@ -186,18 +186,3 @@ def get_all_sites(config: dict[str, Any]) -> list[dict[str, Any]]:
         validate_site_config(site)
 
     return sites
-
-
-def validate_party_config(party: dict[str, Any]) -> None:
-    """Backward-compatible alias for validate_site_config."""
-    validate_site_config(party)
-
-
-def get_party_by_name(config: dict[str, Any], party_name: str) -> dict[str, Any]:
-    """Backward-compatible alias for get_site_by_name."""
-    return get_site_by_name(config, party_name)
-
-
-def get_all_parties(config: dict[str, Any]) -> list[dict[str, Any]]:
-    """Backward-compatible alias for get_all_sites."""
-    return get_all_sites(config)
