@@ -1,0 +1,73 @@
+sites:
+  - name: "Lakruzz"
+    description: "Lakruzz.com"
+    website: "https://www.lakruzz.com"
+    depth: 3
+    ignore_urls:
+      - "/terms/"
+      - "/feed.xml"
+      - "*/assets/*"
+      - "https://agent.lakruzz.com**"
+      - "https://code-conf.lakruzz.com**"
+      - "*/tags"
+    domains:
+      - "*.lakruzz.com"
+
+  - name: "inc inc"
+    description: "inc inc"
+    website: "https://www.inc-inc.dk"
+    depth: 3
+    ignore_urls:
+      - "/feed.xml"
+      - "*/assets/*"
+
+    domains:
+      - "*.inc-inc.dk"
+
+  - name: "Linkedin"
+    description: "Linedin profile of Lakruzz"
+    website: "https://www.linkedin.com/in/lakruzz/"
+    depth: 1
+
+    domains:
+      - "www.linkedin.com"
+
+# Global crawling settings
+crawl_settings:
+  depth: 3
+  include_pdfs: true
+  ignore_urls:
+    - "http://**"
+    - "**facebook.com**"
+    - "**x.com**"
+    - "**gmail.com**"
+    - "**outlook.com**"
+    - "**outlook.dk**"
+    - "**cookie**"
+    - "*/presse**"
+    - "**english**"
+    - "*/bliv-**"
+    - "*/giv-**"
+    - "*/vaer-**"
+    - "*/mit-**"
+    - "*/betal-**"
+    - "*/medlemslogin"
+    - "*/kontakt"
+    - "*/stoet-os**"
+    - "*/login"
+    - "*/kontakt-os"
+    - "*/skolemateriale"
+    - "*/privatlivspolitik"
+    - "*/politikere/borgmestre/*"
+    - "*/politikere/byraadsmedlemmer/*"
+    - "*/politikere/regionsraadsmedlemmer/*"
+#  timeout_seconds: 30
+#  respect_robots_txt: true
+#  rate_limit_delay_seconds: 1
+#  user_agent: "web-scraper-rag/0.1.0 (+https://github.com/example/web-scraper-rag)"
+
+# Output settings
+output:
+  markdown_extension: ".md"
+  pdf_extension: ".pdf"
+  merged_pdf_suffix: "_documents"

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-source ./.scripts/trunk-worthy
+gh insitu run trunk-worthy

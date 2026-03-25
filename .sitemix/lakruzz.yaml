@@ -9,11 +9,11 @@ sites:
       - "*/assets/*"
       - "https://agent.lakruzz.com**"
       - "https://code-conf.lakruzz.com**"
-      - "**.pdf"
       - "*/tags"
     domains:
       - "lakruzz.com"
       - "www.lakruzz.com"
+
 # Global crawling settings
 crawl_settings:
   max_depth: 2

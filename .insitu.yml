@@ -1,0 +1,113 @@
+# .insitu.yml – insitu self-hosting configuration
+# Run 'insitu plan' to preview  |  'insitu run' to execute
+# cspell:ignore markdownlint
+
+defaults:
+  die-on-error: true
+  timeout: 5m
+  verbose: false
+
+inventory:
+  - id: "cspell"
+    name: "Run cspell"
+    command: "cspell"
+
+  - id: "markdownlint"
+    name: "Run markdownlint"
+    command: "markdownlint-cli2"
+
+  - id: "prettier"
+    name: "Run prettier"
+    command: "prettier --check ."
+
+  - id: "format-check"
+    name: "Run format check"
+    command: "uv run poe format-check"
+
+  - id: "lint"
+    name: "Run linters"
+    command: "uv run poe lint"
+
+  - id: "test"
+    name: "Run tests"
+    command: "uv run poe test"
+
+  - id: "gh-auth"
+    name: "GitHub Authentication"
+    command: "gh auth status"
+
+  - id: "install-takt"
+    name: "Install Takt"
+    command: "gh extension install devx-cafe/gh-tt"
+
+  - id: "install-takt-shortcuts"
+    name: "Install Takt Shortcuts"
+    command: |
+      gh alias set workon '!gh tt workon "$@"' --clobber 
+      gh alias set wrapup '!gh tt wrapup "$@"' --clobber
+      gh alias set deliver '!gh tt deliver "$@"' --clobber
+      gh alias set semver '!gh tt semver "$@"' --clobber
+
+  - id: "safe-repo"
+    name: "Mark repository as safe for git operations"
+    command: "git config --global --add safe.directory $(pwd)"
+
+  - id: repo-gitconfig
+    name: "Use repo-root .gitconfig for consistent git settings"
+    command: |
+      git config --local --get include.path | grep -e ../.gitconfig >/dev/null 2>&1 || \
+      git config --local --add include.path ../.gitconfig
+
+  - id: "install-lint-tools"
+    name: "Install linting and checker tools"
+    command: |
+      npm install -g cspell markdownlint-cli2 @cspell/dict-da-dk prettier
+
+  - id: "python-uv"
+    name: "Set up uv and Python environment"
+    command: |
+      curl -LsSf https://astral.sh/uv/install.sh | sh
+      uv venv --python 3.11
+      . .venv/bin/activate
+      uv sync --all-extras
+
+  - id: "install-playwright"
+    name: "Install Playwright browsers"
+    command: |
+      . .venv/bin/activate
+      playwright install --with-deps chromium
+
+waves:
+  - id: trunk-worthy
+    name: "Trunk Worthy Checks"
+    checks:
+      - "cspell"
+      - "markdownlint"
+      - "prettier"
+      - "format-check"
+      - "lint"
+      - "test"
+
+  - id: "post-create"
+    name: "Dev Container Post Create - install tools and set up environment"
+    parallel: true
+    checks:
+      - "gh-auth"
+      - "install-takt"
+      - "install-takt-shortcuts"
+      - "safe-repo"
+      - "repo-gitconfig"
+      - "python-uv"
+
+  - id: "install-playwright"
+    name: "Dev Container Post Create - install Playwright"
+    parallel: true
+    checks:
+      - "install-playwright"
+
+  - id: "runner-prep"
+    name: "GitHub Workflow Runner Preparation"
+    parallel: true
+    checks:
+      - "install-lint-tools"
+      - "python-uv"

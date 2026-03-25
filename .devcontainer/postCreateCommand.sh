@@ -22,12 +22,15 @@ uv sync --all-extras
 echo "$PREFIX ✅ Python environment synced with uv"
 
 PLAYWRIGHT_CACHE_DIR="${PLAYWRIGHT_BROWSERS_PATH:-$HOME/.cache/ms-playwright}"
+echo "$PREFIX Installing Playwright OS dependencies..."
+playwright install-deps chromium
+echo "$PREFIX ✅ Playwright OS dependencies installed"
 if compgen -G "$PLAYWRIGHT_CACHE_DIR/chromium_headless_shell-*/chrome-linux/headless_shell" > /dev/null; then
-  echo "$PREFIX ✅ Playwright Chromium already installed in cache"
+  echo "$PREFIX ✅ Playwright Chromium browser already installed in cache"
 else
-  echo "$PREFIX Installing Playwright Chromium and OS dependencies (first time only)..."
-  playwright install --with-deps chromium
-  echo "$PREFIX ✅ Playwright Chromium installed"
+  echo "$PREFIX Installing Playwright Chromium browser (first time only)..."
+  playwright install chromium
+  echo "$PREFIX ✅ Playwright Chromium browser installed"
 fi
 
 # GitHub CLI Dependencies

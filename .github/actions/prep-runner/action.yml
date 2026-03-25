@@ -9,34 +9,29 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Install insitu
+      shell: bash
+      run: gh ext install devx-cafe/gh-insitu
+
+    - name: Verify environment
+      if: ${{ inputs.verify }}
+      shell: bash
+      run: ${{ inputs.verify }} --mark-pending
+
     - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
         python-version: "3.11"
 
-    - name: Set up uv and Python environment
-      shell: bash
-      run: |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        uv venv --python 3.11
-        . .venv/bin/activate
-        uv sync --all-extras
-
-    - name: Install Playwright browsers
-      shell: bash
-      run: |
-        . .venv/bin/activate
-        playwright install --with-deps chromium
-
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
-        node-version: "20"
+        node-version: "24"
 
     # Install npm packages required by .githooks/pre-commit
-    - name: Install linting and checker tools
+    - name: Insitu prer runner - Install linting and checker tools
       shell: bash
-      run: npm install -g cspell markdownlint-cli2 @cspell/dict-da-dk prettier
+      run: gh insitu run runner-prep install-playwright
 
     - name: Verify environment
       if: ${{ inputs.verify }}
